@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Price Optimization — RestaurantAI" />
+    <title>Price Optimization — RestaurantAI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet" />
+
+    <style>
+        /* ── Reset ─────────────────────────────────────────────────── */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ── Variables ─────────────────────────────────────────────── */
+        :root {
+            --sidebar-w: 250px;
+            --sidebar-w-col: 70px;
+            --topbar-h: 64px;
+
+            --bg: #0a0a0f;
+            --bg-card: rgba(255, 255, 255, 0.04);
+            --bg-card-h: rgba(255, 255, 255, 0.07);
+            --sidebar-bg: #0d0d18;
+            --topbar-bg: rgba(13, 13, 24, 0.85);
+            --border: rgba(255, 255, 255, 0.07);
+
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --accent: #a855f7;
+            --accent-dark: #7c3aed;
+            --accent-glow: rgba(168, 85, 247, 0.25);
+            --green: #22c55e;
+            --yellow: #fbbf24;
+            --red: #ef4444;
+            --blue: #3b82f6;
+
+            --radius: 14px;
+            --radius-lg: 18px;
+        }
+
+        html {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        /* ── Animations ────────────────────────────────────────────── */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* ══════════════════════════════════════════
+       SIDEBAR
+    ══════════════════════════════════════════ */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: var(--sidebar-w);
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            transition: width .3s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-w-col);
+        }
+
+        .sidebar-header {
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: .85rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-logo-icon {
+            font-size: 1.8rem;
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar-brand .name {
+            font-size: .85rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .sidebar-brand .sub {
+            font-size: .65rem;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 0;
+        }
+
+        .nav-section-label {
+            font-size: .65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: #475569;
+            padding: .75rem 1.25rem;
+            margin-top: .5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            padding: .7rem 1.25rem;
+            margin: .25rem .6rem;
+            border-radius: 9px;
+            cursor: pointer;
+            transition: all .2s;
+            color: var(--muted);
+            font-size: .85rem;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, .06);
+            color: var(--text);
+        }
+
+        .nav-item.active {
+            background: rgba(168, 85, 247, .15);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .nav-icon {
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .nav-label {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sidebar-footer {
+            padding: 1.25rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .9rem;
+            flex-shrink: 0;
+        }
+
+        .avatar-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .avatar-info .uname {
+            font-size: .75rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .avatar-info .urole {
+            font-size: .65rem;
+            color: var(--muted);
+            margin-top: 1px;
+        }
+
+        /* ══════════════════════════════════════════
+       TOPBAR
+    ══════════════════════════════════════════ */
+        .topbar {
+            position: fixed;
+            top: 0;
+            left: var(--sidebar-w);
+            right: 0;
+            height: var(--topbar-h);
+            background: var(--topbar-bg);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.75rem;
+            z-index: 99;
+            backdrop-filter: blur(10px);
+            transition: left .3s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        .sidebar.collapsed~.main-wrap .topbar {
+            left: var(--sidebar-w-col);
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .menu-toggle {
+            display: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .menu-toggle:hover {
+            background: rgba(255, 255, 255, .1);
+            color: var(--text);
+        }
+
+        .page-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .page-breadcrumb {
+            font-size: .72rem;
+            color: var(--muted);
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: .42rem .85rem;
+            font-size: .82rem;
+            color: var(--muted);
+            transition: all .25s;
+        }
+
+        .search-bar input {
+            background: none;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-size: .82rem;
+            font-family: 'Inter', sans-serif;
+            width: 160px;
+        }
+
+        .search-bar input::placeholder {
+            color: var(--muted);
+        }
+
+        .search-bar:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            font-size: .95rem;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, .1);
+            color: var(--text);
+        }
+
+        .topbar-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .85rem;
+            cursor: pointer;
+            border: 2px solid rgba(168, 85, 247, .3);
+        }
+
+        /* ══════════════════════════════════════════
+       MAIN AREA
+    ══════════════════════════════════════════ */
+        .main-wrap {
+            margin-left: var(--sidebar-w);
+            transition: margin-left .3s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        .sidebar.collapsed~.main-wrap {
+            margin-left: var(--sidebar-w-col);
+        }
+
+        .main-content {
+            padding: calc(var(--topbar-h) + 1.75rem) 1.75rem 2rem;
+            min-height: 100vh;
+        }
+
+        /* ── Section header ────────────────────────────────────────── */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.75rem;
+            animation: fadeUp .5s ease both;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        /* ── Card ────────────────────────────────────────────────– */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            animation: fadeUp .5s ease both;
+        }
+
+        /* ── Table ──────────────────────────────────────────────– */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .85rem;
+            animation: fadeUp .5s ease both;
+        }
+
+        .data-table thead tr {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table th {
+            font-size: .75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: #475569;
+            padding: .85rem 1rem;
+            text-align: left;
+        }
+
+        .data-table td {
+            padding: 1rem;
+            color: var(--muted);
+            border-bottom: 1px solid rgba(255, 255, 255, .03);
+        }
+
+        .data-table tbody tr:hover {
+            background: rgba(255, 255, 255, .02);
+        }
+
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* ── Highlighted rows ──────────────────────────────────────– */
+        .row-high-profit {
+            background: linear-gradient(90deg, rgba(34, 197, 94, 0.08), transparent);
+            border-left: 3px solid var(--green);
+        }
+
+        .row-medium-profit {
+            background: linear-gradient(90deg, rgba(251, 191, 36, 0.08), transparent);
+            border-left: 3px solid var(--yellow);
+        }
+
+        .row-low-profit {
+            background: linear-gradient(90deg, rgba(239, 68, 68, 0.08), transparent);
+            border-left: 3px solid var(--red);
+        }
+
+        /* ── Price styles ──────────────────────────────────────────– */
+        .price-current {
+            font-weight: 600;
+            color: #94a3b8;
+        }
+
+        .price-suggested {
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .price-increase {
+            color: var(--green);
+            font-weight: 600;
+        }
+
+        .price-decrease {
+            color: var(--red);
+            font-weight: 600;
+        }
+
+        /* ── Demand change indicator ───────────────────────────────– */
+        .demand-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            padding: .35rem .75rem;
+            background: rgba(255, 255, 255, .03);
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 6px;
+            font-size: .8rem;
+        }
+
+        .demand-up {
+            color: #4ade80;
+        }
+
+        .demand-down {
+            color: #f87171;
+        }
+
+        .demand-neutral {
+            color: #94a3b8;
+        }
+
+        /* ── Profit impact badge ───────────────────────────────────– */
+        .profit-badge {
+            display: inline-block;
+            font-size: .72rem;
+            font-weight: 700;
+            padding: .35rem .75rem;
+            border-radius: 6px;
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .profit-high {
+            background: rgba(34, 197, 94, .15);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, .3);
+        }
+
+        .profit-medium {
+            background: rgba(251, 191, 36, .15);
+            color: #fbbf24;
+            border: 1px solid rgba(251, 191, 36, .3);
+        }
+
+        .profit-low {
+            background: rgba(148, 163, 184, .15);
+            color: #cbd5e1;
+            border: 1px solid rgba(148, 163, 184, .3);
+        }
+
+        /* ── Action buttons ────────────────────────────────────────– */
+        .action-group {
+            display: flex;
+            gap: .5rem;
+        }
+
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, .05);
+            color: var(--muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .9rem;
+            transition: all .2s;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, .1);
+            color: var(--text);
+        }
+
+        .approve-btn {
+            background: rgba(34, 197, 94, .15);
+            border-color: rgba(34, 197, 94, .3);
+            color: #4ade80;
+        }
+
+        .approve-btn:hover {
+            background: rgba(34, 197, 94, .25);
+        }
+
+        /* ── Filter bar ────────────────────────────────────────────– */
+        .filter-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            align-items: center;
+            animation: fadeUp .5s ease both;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: .6rem .85rem;
+            color: var(--text);
+            font-size: .85rem;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .filter-select:hover {
+            border-color: var(--accent);
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .form-input {
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: .6rem .85rem;
+            color: var(--text);
+            font-size: .85rem;
+            font-family: 'Inter', sans-serif;
+            transition: all .2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        /* ── Modal ─────────────────────────────────────────────────– */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, .6);
+            z-index: 200;
+            animation: fadeIn .2s ease;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-backdrop.active {
+            display: block;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.95);
+            width: 90%;
+            max-width: 500px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            z-index: 201;
+            animation: slideIn .3s ease both;
+            overflow: hidden;
+        }
+
+        .modal.active {
+            display: block;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, .05);
+            border: none;
+            color: var(--muted);
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .2s;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, .1);
+            color: var(--text);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: .75rem;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .55rem 1.2rem;
+            border-radius: 10px;
+            border: none;
+            font-size: .85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(168, 85, 247, .3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, .08);
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, .12);
+        }
+
+        /* ── Stats ─────────────────────────────────────────────────– */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .stat-card {
+            background: rgba(168, 85, 247, .08);
+            border: 1px solid rgba(168, 85, 247, .2);
+            border-radius: 10px;
+            padding: 1.25rem;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: .75rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            margin-bottom: .5rem;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .stat-subtext {
+            font-size: .7rem;
+            color: var(--muted);
+            margin-top: .25rem;
+        }
+
+        /* ── Responsive ────────────────────────────────────────────– */
+        @media (max-width: 900px) {
+            :root {
+                --sidebar-w: 70px;
+            }
+
+            .sidebar-brand,
+            .nav-label,
+            .avatar-info,
+            .nav-section-label {
+                opacity: 0;
+                pointer-events: none;
+            }
+
+            .menu-toggle {
+                display: flex;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .main-content {
+                padding: calc(var(--topbar-h) + 1rem) 1rem 1.5rem;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .data-table {
+                font-size: .75rem;
+            }
+
+            .data-table th,
+            .data-table td {
+                padding: .6rem;
+            }
+
+            .action-group {
+                flex-direction: column;
+                gap: .25rem;
+            }
+
+            .modal {
+                max-width: calc(100% - 2rem);
+            }
+
+            .search-bar {
+                display: none;
+            }
+
+            .filter-bar {
+                flex-direction: column;
+            }
+
+            .filter-bar input,
+            .filter-bar select {
+                width: 100%;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            animation: fadeUp .5s ease both;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: .5rem;
+        }
+
+        .empty-state-text {
+            color: var(--muted);
+            font-size: .9rem;
+        }
+
+        /* ── Page-specific styles ──────────────────────────────────── */
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: .75rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, .05);
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            color: var(--muted);
+            font-size: .85rem;
+        }
+
+        .detail-value {
+            color: var(--text);
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .optimization-note {
+            background: rgba(168, 85, 247, .1);
+            border-left: 3px solid var(--accent);
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: .9rem;
+            color: #d8b4fe;
+        }
+
+        .approval-status {
+            display: inline-block;
+            font-size: .7rem;
+            font-weight: 700;
+            padding: .25rem .6rem;
+            border-radius: 4px;
+            background: rgba(148, 163, 184, .15);
+            color: #cbd5e1;
+            text-transform: uppercase;
+        }
+
+        .approval-status.approved {
+            background: rgba(34, 197, 94, .15);
+            color: #4ade80;
+        }
+
+        .approval-status.pending {
+            background: rgba(244, 164, 96, .15);
+            color: #fbbf24;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ══════════ SIDEBAR ══════════ -->
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="Restaurant Navigation">
+
+        <div class="sidebar-header">
+            <div class="sidebar-logo-icon" aria-hidden="true">🍜</div>
+            <div class="sidebar-brand">
+                <div class="name">Spice Garden</div>
+                <div class="sub">Dashboard</div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Menu</div>
+
+            <div class="nav-item" onclick="navigate('dashboard')">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label">Dashboard</span>
+            </div>
+
+            <div class="nav-item" onclick="navigate('orders')">
+                <span class="nav-icon">📋</span>
+                <span class="nav-label">Orders</span>
+            </div>
+
+            <div class="nav-item" onclick="navigate('menu')">
+                <span class="nav-icon">🍱</span>
+                <span class="nav-label">Menu Items</span>
+            </div>
+
+            <div class="nav-item active" onclick="navigate('pricing')">
+                <span class="nav-icon">💰</span>
+                <span class="nav-label">Price Optimization</span>
+            </div>
+
+            <div class="nav-item" onclick="navigate('intelligence')">
+                <span class="nav-icon">💡</span>
+                <span class="nav-label">Intelligence</span>
+            </div>
+
+            <div class="nav-item" onclick="navigate('combos')">
+                <span class="nav-icon">🎯</span>
+                <span class="nav-label">Combos</span>
+            </div>
+
+            <div class="nav-section-label">Settings</div>
+
+            <div class="nav-item" onclick="navigate('profile')">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-label">Settings</span>
+            </div>
+
+            <div class="nav-item" onclick="navigate('support')">
+                <span class="nav-icon">💬</span>
+                <span class="nav-label">Support</span>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="avatar" aria-hidden="true">👨‍🍳</div>
+            <div class="avatar-info">
+                <div class="uname">Rajesh Kumar</div>
+                <div class="urole">Owner</div>
+            </div>
+        </div>
+
+    </aside>
+
+    <!-- ══════════ MAIN WRAP ══════════ -->
+    <div class="main-wrap" id="mainWrap">
+
+        <!-- ══════════ TOP NAVBAR ══════════ -->
+        <header class="topbar" role="banner">
+            <div class="topbar-left">
+                <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">☰</button>
+                <div>
+                    <div class="page-title">Price Optimization</div>
+                    <div class="page-breadcrumb">Spice Garden › Pricing › Optimization</div>
+                </div>
+            </div>
+
+            <div class="topbar-right">
+                <div class="search-bar">
+                    <span style="color:var(--muted)">🔍</span>
+                    <input type="text" placeholder="Search items…" aria-label="Search" onkeyup="filterItems()" />
+                </div>
+                <button class="icon-btn" aria-label="Refresh" onclick="refreshPage()">🔄</button>
+                <button class="icon-btn" aria-label="Logout" onclick="logout()">🚪</button>
+                <div class="topbar-avatar" role="img" aria-label="User avatar">👨‍🍳</div>
+            </div>
+        </header>
+
+        <!-- ══════════ CONTENT ══════════ -->
+        <main class="main-content" id="mainContent" role="main">
+
+            <!-- Section header -->
+            <div class="section-header">
+                <h1 class="section-title">Price Optimization</h1>
+                <span style="font-size: .85rem; color: var(--muted);" id="itemCount">0 items</span>
+            </div>
+
+            <!-- Optimization info -->
+            <div class="optimization-note">
+                💡 <strong>AI-Powered Pricing:</strong> Recommendations based on demand elasticity, competitor analysis, and profit margin optimization. Approved changes take effect immediately.
+            </div>
+
+            <!-- Stats Summary -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Items</div>
+                    <div class="stat-value" id="totalItems">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Avg Price Change</div>
+                    <div class="stat-value" id="avgChange">0%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Est. Revenue Impact</div>
+                    <div class="stat-value" id="totalRevenue">₹0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Pending Approvals</div>
+                    <div class="stat-value" id="pendingCount">0</div>
+                </div>
+            </div>
+
+            <!-- Filter bar -->
+            <div class="filter-bar">
+                <input type="text" class="form-input" placeholder="Search by item name…" 
+                    id="searchInput" style="flex: 1; min-width: 200px;" onkeyup="filterItems()" />
+                <select class="filter-select" id="profitFilter" onchange="filterItems()">
+                    <option value="">All Profit Levels</option>
+                    <option value="high">High (>10%)</option>
+                    <option value="medium">Medium (5-10%)</option>
+                    <option value="low">Low (<5%)</option>
+                </select>
+                <select class="filter-select" id="statusFilter" onchange="filterItems()">
+                    <option value="">All Status</option>
+                    <option value="pending">Pending Approval</option>
+                    <option value="approved">Approved</option>
+                </select>
+            </div>
+
+            <!-- Pricing table -->
+            <div class="card">
+                <table class="data-table" id="pricingTable" role="table" aria-label="Price optimization recommendations">
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Current Price</th>
+                            <th>Suggested Price</th>
+                            <th>Expected Demand Change</th>
+                            <th>Profit Impact</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Filled by JavaScript -->
+                    </tbody>
+                </table>
+                <div id="emptyState" class="empty-state" style="display:none;">
+                    <div class="empty-state-icon">💸</div>
+                    <div class="empty-state-title">No items match your filters</div>
+                    <div class="empty-state-text">Try adjusting your search or filters</div>
+                </div>
+            </div>
+
+        </main>
+
+    </div>
+
+    <!-- ══════════ MODAL BACKDROP ══════════ -->
+    <div class="modal-backdrop" id="backdrop" onclick="closeApprovalModal()"></div>
+
+    <!-- ══════════ APPROVAL MODAL ══════════ -->
+    <div class="modal" id="approvalModal">
+        <div class="modal-header">
+            <h2 class="modal-title">Approve Price Change</h2>
+            <button class="modal-close" onclick="closeApprovalModal()" aria-label="Close modal">✕</button>
+        </div>
+
+        <div class="modal-body">
+            <div id="approvalContent">
+                <!-- Filled by JavaScript -->
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeApprovalModal()">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="confirmApproval()">Approve Change</button>
+        </div>
+    </div>
+
+    <!-- ══════════ SCRIPT ══════════ -->
+    <script>
+        "use strict";
+
+        // ═══ DATA STORE ═══════════════════════════════════════════
+        const pricingData = [
+            {
+                id: 1,
+                name: 'Butter Chicken',
+                currentPrice: 350,
+                suggestedPrice: 385,
+                demandChange: -8,
+                profitImpact: 12.5,
+                status: 'pending',
+                estimatedRevenue: 5200,
+                elasticity: -0.85,
+                reason: 'High demand indicator with strong margin'
+            },
+            {
+                id: 2,
+                name: 'Tandoori Chicken',
+                currentPrice: 280,
+                suggestedPrice: 290,
+                demandChange: -5,
+                profitImpact: 6.8,
+                status: 'pending',
+                estimatedRevenue: 1850,
+                elasticity: -0.75,
+                reason: 'Significant room for margin improvement'
+            },
+            {
+                id: 3,
+                name: 'Naan',
+                currentPrice: 80,
+                suggestedPrice: 85,
+                demandChange: -3,
+                profitImpact: 8.2,
+                status: 'approved',
+                estimatedRevenue: 980,
+                elasticity: -0.45,
+                reason: 'High volume item with good elasticity'
+            },
+            {
+                id: 4,
+                name: 'Biryani',
+                currentPrice: 250,
+                suggestedPrice: 280,
+                demandChange: -12,
+                profitImpact: 15.3,
+                status: 'pending',
+                estimatedRevenue: 4200,
+                elasticity: -1.05,
+                reason: 'Highest profit potential'
+            },
+            {
+                id: 5,
+                name: 'Paneer Tikka',
+                currentPrice: 220,
+                suggestedPrice: 230,
+                demandChange: -6,
+                profitImpact: 4.2,
+                status: 'approved',
+                estimatedRevenue: 650,
+                elasticity: -0.65,
+                reason: 'Moderate demand sensitivity'
+            },
+            {
+                id: 6,
+                name: 'Garlic Naan',
+                currentPrice: 100,
+                suggestedPrice: 108,
+                demandChange: -4,
+                profitImpact: 9.5,
+                status: 'pending',
+                estimatedRevenue: 1340,
+                elasticity: -0.52,
+                reason: 'Popular add-on with high margin'
+            },
+            {
+                id: 7,
+                name: 'Gulab Jamun',
+                currentPrice: 120,
+                suggestedPrice: 125,
+                demandChange: -2,
+                profitImpact: 3.8,
+                status: 'approved',
+                estimatedRevenue: 280,
+                elasticity: -0.35,
+                reason: 'Inelastic dessert - low demand risk'
+            },
+            {
+                id: 8,
+                name: 'Mango Lassi',
+                currentPrice: 90,
+                suggestedPrice: 98,
+                demandChange: -7,
+                profitImpact: 10.1,
+                status: 'pending',
+                estimatedRevenue: 1420,
+                elasticity: -0.82,
+                reason: 'Seasonal beverage with strong margins'
+            },
+            {
+                id: 9,
+                name: 'Samosa',
+                currentPrice: 60,
+                suggestedPrice: 65,
+                demandChange: -8,
+                profitImpact: 11.2,
+                status: 'pending',
+                estimatedRevenue: 890,
+                elasticity: -0.95,
+                reason: 'Appetizer with good demand elasticity'
+            },
+            {
+                id: 10,
+                name: 'Raita',
+                currentPrice: 50,
+                suggestedPrice: 52,
+                demandChange: -3,
+                profitImpact: 2.1,
+                status: 'approved',
+                estimatedRevenue: 120,
+                elasticity: -0.4,
+                reason: 'Accompaniment with stable demand'
+            }
+        ];
+
+        let currentApprovingItem = null;
+
+        // ═══ PROFIT CLASSIFICATION ═════════════════════════════════
+        function getProfitClass(profit) {
+            if (profit > 10) return 'high';
+            if (profit > 5) return 'medium';
+            return 'low';
+        }
+
+        function getProfitLabel(profit) {
+            if (profit > 10) return `↑ +${profit.toFixed(1)}%`;
+            if (profit > 5) return `↑ +${profit.toFixed(1)}%`;
+            return `↑ +${profit.toFixed(1)}%`;
+        }
+
+        // ═══ DEMAND INDICATOR ══════════════════════════════════════
+        function getDemandIndicator(change) {
+            if (change > 0) return `📈 +${Math.abs(change)}%`;
+            if (change < 0) return `📉 ${change}%`;
+            return `➡️ 0%`;
+        }
+
+        // ═══ TABLE RENDERING ═══════════════════════════════════════
+        function renderTable(items = pricingData) {
+            const tbody = document.getElementById('tableBody');
+            const emptyState = document.getElementById('emptyState');
+            const itemCount = document.getElementById('itemCount');
+
+            if (items.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                itemCount.textContent = '0 items';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            itemCount.textContent = items.length + ' item' + (items.length !== 1 ? 's' : '');
+
+            tbody.innerHTML = items.map(item => {
+                const priceChange = item.suggestedPrice - item.currentPrice;
+                const priceChangePercent = (priceChange / item.currentPrice * 100).toFixed(1);
+                const profitClass = getProfitClass(item.profitImpact);
+                const rowClass = profitClass === 'high' ? 'row-high-profit' : 
+                                 profitClass === 'medium' ? 'row-medium-profit' : 'row-low-profit';
+
+                return `
+                    <tr class="${rowClass}">
+                        <td><strong>${escapeHtml(item.name)}</strong></td>
+                        <td><span class="price-current">₹${item.currentPrice}</span></td>
+                        <td>
+                            <span class="price-suggested">₹${item.suggestedPrice}</span>
+                            <span class="${priceChange > 0 ? 'price-increase' : 'price-decrease'}" style="margin-left: .5rem;">
+                                ${priceChange > 0 ? '+' : ''}${priceChangePercent}%
+                            </span>
+                        </td>
+                        <td>
+                            <span class="demand-indicator ${item.demandChange > 0 ? 'demand-up' : item.demandChange < 0 ? 'demand-down' : 'demand-neutral'}">
+                                ${getDemandIndicator(item.demandChange)}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="profit-badge profit-${profitClass}">
+                                ${getProfitLabel(item.profitImpact)}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="approval-status ${item.status}">
+                                ${item.status === 'approved' ? '✓ Approved' : '⏳ Pending'}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-group">
+                                <button class="action-btn ${item.status === 'approved' ? '' : 'approve-btn'}" 
+                                    onclick="openApprovalModal(${item.id})" 
+                                    title="${item.status === 'approved' ? 'Already approved' : 'Approve this price change'}"
+                                    ${item.status === 'approved' ? 'disabled' : ''}>
+                                    ${item.status === 'approved' ? '✓' : '→'}
+                                </button>
+                                <button class="action-btn" title="View details" onclick="showDetails(${item.id})">👁️</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ═══ FILTERING ═════════════════════════════════════════════
+        function filterItems() {
+            const searchVal = document.getElementById('searchInput').value.toLowerCase();
+            const profitVal = document.getElementById('profitFilter').value;
+            const statusVal = document.getElementById('statusFilter').value;
+
+            const filtered = pricingData.filter(item => {
+                const matchSearch = !searchVal || item.name.toLowerCase().includes(searchVal);
+                const matchProfit = !profitVal || getProfitClass(item.profitImpact) === profitVal;
+                const matchStatus = !statusVal || item.status === statusVal;
+
+                return matchSearch && matchProfit && matchStatus;
+            });
+
+            renderTable(filtered);
+            updateStats();
+        }
+
+        // ═══ APPROVAL MODAL ════════════════════════════════════════
+        function openApprovalModal(itemId) {
+            const item = pricingData.find(i => i.id === itemId);
+            if (!item || item.status === 'approved') return;
+
+            currentApprovingItem = itemId;
+            const priceChange = item.suggestedPrice - item.currentPrice;
+            const priceChangePercent = (priceChange / item.currentPrice * 100).toFixed(1);
+
+            const html = `
+                <div class="detail-row">
+                    <span class="detail-label">Item:</span>
+                    <span class="detail-value">${escapeHtml(item.name)}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Current Price:</span>
+                    <span class="detail-value">₹${item.currentPrice}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Suggested Price:</span>
+                    <span class="detail-value price-suggested">₹${item.suggestedPrice}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Price Change:</span>
+                    <span class="detail-value ${priceChange > 0 ? 'price-increase' : 'price-decrease'}">
+                        ${priceChange > 0 ? '+' : ''}${priceChangePercent}%
+                    </span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Expected Demand Change:</span>
+                    <span class="detail-value">${getDemandIndicator(item.demandChange)}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Profit Impact:</span>
+                    <span class="detail-value profit-badge profit-${getProfitClass(item.profitImpact)}">
+                        +${item.profitImpact.toFixed(1)}%
+                    </span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Est. Revenue Impact:</span>
+                    <span class="detail-value">₹${item.estimatedRevenue.toLocaleString()}</span>
+                </div>
+                <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255, 255, 255, .1);">
+                    <div style="font-size: .8rem; color: var(--muted); margin-bottom: .5rem;">
+                        <strong>Analysis:</strong> ${escapeHtml(item.reason)}
+                    </div>
+                    <div style="font-size: .8rem; color: var(--muted);">
+                        Price elasticity: ${item.elasticity} (${Math.abs(item.elasticity) > 1 ? 'elastic' : 'inelastic'})
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('approvalContent').innerHTML = html;
+            document.getElementById('backdrop').classList.add('active');
+            document.getElementById('approvalModal').classList.add('active');
+        }
+
+        function closeApprovalModal() {
+            document.getElementById('backdrop').classList.remove('active');
+            document.getElementById('approvalModal').classList.remove('active');
+            currentApprovingItem = null;
+        }
+
+        function confirmApproval() {
+            if (!currentApprovingItem) return;
+
+            const item = pricingData.find(i => i.id === currentApprovingItem);
+            if (item) {
+                item.status = 'approved';
+                renderTable();
+                updateStats();
+                closeApprovalModal();
+                showNotification(`Price change approved for ${item.name}`, 'success');
+            }
+        }
+
+        // ═══ STATS UPDATE ══════════════════════════════════════════
+        function updateStats() {
+            const approvedItems = pricingData.filter(i => i.status === 'approved').length;
+            const pendingItems = pricingData.filter(i => i.status === 'pending').length;
+            const avgChange = (pricingData.reduce((sum, i) => sum + ((i.suggestedPrice - i.currentPrice) / i.currentPrice * 100), 0) / pricingData.length).toFixed(1);
+            const totalRevenue = pricingData.filter(i => i.status === 'approved').reduce((sum, i) => sum + i.estimatedRevenue, 0);
+
+            document.getElementById('totalItems').textContent = pricingData.length;
+            document.getElementById('avgChange').textContent = avgChange + '%';
+            document.getElementById('totalRevenue').textContent = '₹' + totalRevenue.toLocaleString();
+            document.getElementById('pendingCount').textContent = pendingItems;
+        }
+
+        // ═══ SHOW DETAILS (placeholder) ════════════════════════════
+        function showDetails(itemId) {
+            const item = pricingData.find(i => i.id === itemId);
+            if (item) {
+                showNotification(`Details for ${item.name}`, 'info');
+            }
+        }
+
+        // ═══ UI CONTROL ════════════════════════════════════════════
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+        }
+
+        function navigate(page) {
+            if (page === 'dashboard') {
+                window.location.href = 'restaurant-dashboard.html';
+            }
+            if (page === 'orders') {
+                window.location.href = 'restaurant-orders.html';
+            }
+            if (page === 'menu') {
+                window.location.href = 'restaurant-menu.html';
+            }
+            if (page === 'intelligence') {
+                window.location.href = 'revenue-intelligence.html';
+            }
+            if (page === 'combos') {
+                window.location.href = 'combo-recommendations.html';
+            }
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+
+        function logout() {
+            if (confirm('Log out?')) {
+                window.location.href = 'restaurant-login.html';
+            }
+        }
+
+        function refreshPage() {
+            const btn = event.currentTarget;
+            btn.style.animation = 'spin .7s linear infinite';
+            btn.disabled = true;
+            setTimeout(() => {
+                btn.style.animation = '';
+                btn.disabled = false;
+                renderTable();
+                updateStats();
+            }, 800);
+        }
+
+        // ═══ UTILITIES ═════════════════════════════════════════════
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showNotification(message, type = 'info') {
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        // ═══ INIT ══════════════════════════════════════════════════
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTable();
+            updateStats();
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeApprovalModal();
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>

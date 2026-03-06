@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Spice Garden - Order Delicious Indian Cuisine Online" />
+    <title>Spice Garden - Home</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet" />
+    <style>
+        /* ── Reset ─────────────────────────────────────────────────── */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ── Variables ─────────────────────────────────────────────── */
+        :root {
+            --bg: #0a0a0f;
+            --bg-card: rgba(255, 255, 255, 0.04);
+            --bg-card-h: rgba(255, 255, 255, 0.07);
+            --border: rgba(255, 255, 255, 0.07);
+
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --accent: #a855f7;
+            --accent-dark: #7c3aed;
+            --accent-glow: rgba(168, 85, 247, 0.25);
+            --orange: #f97316;
+            --green: #22c55e;
+            --red: #ef4444;
+            --blue: #3b82f6;
+            --yellow: #fbbf24;
+
+            --radius: 14px;
+            --radius-lg: 18px;
+        }
+
+        html {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+        }
+
+        /* ── Animations ────────────────────────────────────────────── */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* ══════════════════════════════════════════
+       HEADER & NAVIGATION
+    ══════════════════════════════════════════ */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            background: rgba(10, 10, 15, 0.95);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+        }
+
+        .navbar {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 1.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: slideIn .3s ease;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text);
+            text-decoration: none;
+            transition: color .2s;
+        }
+
+        .logo:hover {
+            color: var(--accent);
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+        }
+
+        .logo-brand {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .logo-name {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .logo-sub {
+            font-size: .65rem;
+            color: var(--muted);
+            font-weight: 400;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: .9rem;
+            font-weight: 500;
+            transition: color .2s;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--accent);
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: .75rem;
+            align-items: center;
+        }
+
+        .cart-btn {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, .08);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .2s;
+        }
+
+        .cart-btn:hover {
+            background: rgba(255, 255, 255, .12);
+            border-color: var(--accent);
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .7rem;
+            font-weight: 700;
+        }
+
+        .btn-primary {
+            padding: .6rem 1.2rem;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+            color: white;
+            font-size: .9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(168, 85, 247, .3);
+        }
+
+        /* ══════════════════════════════════════════
+       BANNER SECTION
+    ══════════════════════════════════════════ */
+        .hero-banner {
+            background: linear-gradient(135deg, rgba(168, 85, 247, .15), rgba(59, 130, 246, .1));
+            border-bottom: 1px solid var(--border);
+            padding: 4rem 1.75rem;
+            text-align: center;
+            animation: fadeUp .6s ease;
+        }
+
+        .hero-content {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--accent), var(--blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+            color: var(--muted);
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            font-size: .85rem;
+            color: var(--muted);
+        }
+
+        /* ══════════════════════════════════════════
+       FEATURED SECTION
+    ══════════════════════════════════════════ */
+        section {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 3rem 1.75rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            animation: fadeUp .5s ease;
+        }
+
+        .section-subtitle {
+            font-size: .9rem;
+            color: var(--muted);
+            display: inline-block;
+            margin-bottom: 2rem;
+            padding-bottom: .5rem;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        /* ── Food Cards Grid ────────────────────────────────────── */
+        .food-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .food-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: all .3s;
+            animation: fadeUp .5s ease both;
+            cursor: pointer;
+        }
+
+        .food-card:hover {
+            border-color: var(--accent);
+            background: var(--bg-card-h);
+            transform: translateY(-8px);
+            box-shadow: 0 16px 32px rgba(168, 85, 247, .15);
+        }
+
+        .food-image {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, rgba(168, 85, 247, .1), rgba(59, 130, 246, .1));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .food-image::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(168, 85, 247, .2), transparent);
+            opacity: 0;
+            transition: opacity .3s;
+        }
+
+        .food-card:hover .food-image::after {
+            opacity: 1;
+        }
+
+        .food-info {
+            padding: 1.25rem;
+        }
+
+        .food-name {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: .5rem;
+        }
+
+        .food-desc {
+            font-size: .8rem;
+            color: var(--muted);
+            margin-bottom: 1rem;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .food-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .food-price {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--green);
+        }
+
+        .food-rating {
+            font-size: .8rem;
+            color: var(--yellow);
+        }
+
+        .add-to-cart-btn {
+            padding: .5rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--accent);
+            background: rgba(168, 85, 247, .1);
+            color: var(--accent);
+            font-size: .8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .add-to-cart-btn:hover {
+            background: rgba(168, 85, 247, .2);
+            box-shadow: 0 4px 12px rgba(168, 85, 247, .2);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: .3rem .75rem;
+            border-radius: 6px;
+            font-size: .7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: .75rem;
+        }
+
+        .badge-featured {
+            background: rgba(168, 85, 247, .2);
+            color: var(--accent);
+        }
+
+        .badge-combo {
+            background: rgba(34, 197, 94, .2);
+            color: var(--green);
+        }
+
+        .badge-popular {
+            background: rgba(251, 191, 36, .2);
+            color: var(--yellow);
+        }
+
+        /* ══════════════════════════════════════════
+       COMBO OFFERS
+    ══════════════════════════════════════════ */
+        .combo-card {
+            background: linear-gradient(135deg, rgba(34, 197, 94, .1), rgba(59, 130, 246, .05));
+            border: 1px solid rgba(34, 197, 94, .2);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            animation: fadeUp .5s ease both;
+        }
+
+        .combo-header {
+            display: flex;
+            align-items: start;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .combo-info h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: .5rem;
+        }
+
+        .combo-items {
+            font-size: .85rem;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .combo-price {
+            text-align: right;
+        }
+
+        .combo-original {
+            font-size: .8rem;
+            color: var(--muted);
+            text-decoration: line-through;
+            margin-bottom: .25rem;
+        }
+
+        .combo-offer {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--green);
+            margin-bottom: .5rem;
+        }
+
+        .combo-save {
+            font-size: .75rem;
+            background: rgba(34, 197, 94, .2);
+            color: var(--green);
+            padding: .25rem .75rem;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .combo-btn {
+            width: 100%;
+            padding: .75rem;
+            background: linear-gradient(135deg, rgba(34, 197, 94, .6), rgba(34, 197, 94, .4));
+            border: 1px solid rgba(34, 197, 94, .3);
+            color: var(--green);
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s;
+            margin-top: 1rem;
+        }
+
+        .combo-btn:hover {
+            background: linear-gradient(135deg, rgba(34, 197, 94, .8), rgba(34, 197, 94, .6));
+            color: #4ade80;
+        }
+
+        /* ══════════════════════════════════════════
+       CTA SECTION
+    ══════════════════════════════════════════ */
+        .cta-section {
+            background: linear-gradient(135deg, rgba(168, 85, 247, .1), rgba(59, 130, 246, .05));
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 3rem;
+            text-align: center;
+            animation: fadeUp .6s ease;
+        }
+
+        .cta-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .cta-text {
+            font-size: 1rem;
+            color: var(--muted);
+            margin-bottom: 2rem;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* ══════════════════════════════════════════
+       FOOTER
+    ══════════════════════════════════════════ */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 2rem 1.75rem;
+            text-align: center;
+            color: var(--muted);
+            font-size: .85rem;
+        }
+
+        /* ══════════════════════════════════════════
+       MODAL
+    ══════════════════════════════════════════ */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, .6);
+            z-index: 200;
+            animation: fadeIn .2s ease;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-backdrop.active {
+            display: block;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.95);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            z-index: 201;
+            animation: scaleIn .3s ease both;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .modal.active {
+            display: block;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color .2s;
+        }
+
+        .modal-close:hover {
+            color: var(--text);
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: rgba(255, 255, 255, .05);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .qty-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, .05);
+            color: var(--text);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all .2s;
+        }
+
+        .qty-btn:hover {
+            background: rgba(255, 255, 255, .1);
+        }
+
+        .qty-display {
+            flex: 1;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: .75rem;
+            margin-top: 1.5rem;
+        }
+
+        .modal-actions button {
+            flex: 1;
+            padding: .75rem;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .modal-actions .cancel {
+            background: rgba(255, 255, 255, .05);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .modal-actions .confirm {
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+            color: white;
+        }
+
+        /* ── Responsive ────────────────────────────────────────– */
+        @media (max-width: 900px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .food-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+        }
+
+        @media (max-width: 600px) {
+            section, .hero-banner, .navbar {
+                padding: 1.5rem 1rem;
+            }
+
+            .hero-title {
+                font-size: 1.5rem;
+            }
+
+            .hero-stats {
+                gap: 1.5rem;
+            }
+
+            .section-title {
+                font-size: 1.5rem;
+            }
+
+            .food-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .cta-section {
+                padding: 2rem 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ══════════ HEADER ══════════ -->
+    <header>
+        <div class="navbar">
+            <a href="customer-home.html" class="logo">
+                <div class="logo-icon">🍜</div>
+                <div class="logo-brand">
+                    <div class="logo-name">Spice Garden</div>
+                    <div class="logo-sub">Premium Indian Cuisine</div>
+                </div>
+            </a>
+
+            <nav class="nav-links">
+                <a href="customer-home.html" class="nav-link active">Home</a>
+                <a href="customer-menu.html" class="nav-link">Menu</a>
+                <a href="#featured" class="nav-link">Featured</a>
+                <a href="#combos" class="nav-link">Combos</a>
+            </nav>
+
+            <div class="nav-buttons">
+                <button class="cart-btn" id="cartBtn" onclick="goToCart()">
+                    🛒
+                    <span class="cart-count" id="cartCount" style="display:none;">0</span>
+                </button>
+                <button class="btn-primary">Login</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ══════════ HERO BANNER ══════════ -->
+    <div class="hero-banner">
+        <div class="hero-content">
+            <h1 class="hero-title">Welcome to Spice Garden</h1>
+            <p class="hero-subtitle">Experience authentic Indian cuisine delivered fresh to your door</p>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <div class="stat-value">50+</div>
+                    <div class="stat-label">Menu Items</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">4.8★</div>
+                    <div class="stat-label">Customer Rating</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">30 min</div>
+                    <div class="stat-label">Avg Delivery</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════ FEATURED DISHES ══════════ -->
+    <section id="featured">
+        <h2 class="section-title">✨ Featured Today</h2>
+        <div class="food-grid" id="featuredGrid">
+            <!-- Filled by JavaScript -->
+        </div>
+    </section>
+
+    <!-- ══════════ POPULAR ITEMS ══════════ -->
+    <section>
+        <h2 class="section-title">🔥 Popular Favorites</h2>
+        <div class="food-grid" id="popularGrid">
+            <!-- Filled by JavaScript -->
+        </div>
+    </section>
+
+    <!-- ══════════ COMBO OFFERS ══════════ -->
+    <section id="combos">
+        <h2 class="section-title">🎁 Combo Offers</h2>
+        <div id="combosGrid">
+            <!-- Filled by JavaScript -->
+        </div>
+    </section>
+
+    <!-- ══════════ CTA SECTION ══════════ -->
+    <section style="margin-bottom: 3rem;">
+        <div class="cta-section">
+            <h2 class="cta-title">Ready to Order?</h2>
+            <p class="cta-text">Explore our full menu and find your favorite dishes today</p>
+            <button class="btn-primary" onclick="window.location.href='customer-menu.html'">Browse Menu</button>
+        </div>
+    </section>
+
+    <!-- ══════════ FOOTER ══════════ -->
+    <footer>
+        <p>&copy; 2026 Spice Garden. All rights reserved. | Authentic Indian Cuisine Delivered</p>
+    </footer>
+
+    <!-- ══════════ MODAL ══════════ -->
+    <div class="modal-backdrop" id="backdrop" onclick="closeModal()"></div>
+    <div class="modal" id="addToCartModal">
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <h2 class="modal-title" id="modalFoodName"></h2>
+        <div class="modal-content">
+            <div class="quantity-control">
+                <button class="qty-btn" onclick="decreaseQty()">−</button>
+                <div class="qty-display" id="qtyDisplay">1</div>
+                <button class="qty-btn" onclick="increaseQty()">+</button>
+            </div>
+            <div style="background: rgba(255, 255, 255, .05); padding: 1rem; border-radius: 8px;">
+                <div style="color: var(--muted); font-size: .85rem; margin-bottom: .5rem;">Price per item</div>
+                <div style="font-size: 1.3rem; font-weight: 700; color: var(--green);" id="modalPrice">₹0</div>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="cancel" onclick="closeModal()">Close</button>
+            <button class="confirm" onclick="confirmAddToCart()">Add to Cart</button>
+        </div>
+    </div>
+
+    <!-- ══════════ SCRIPT ══════════ -->
+    <script>
+        "use strict";
+
+        const menuData = [
+            { id: 1, name: 'Butter Chicken', price: 280, desc: 'Tender chicken in creamy tomato sauce', icon: '🍗', featured: true, popular: true },
+            { id: 2, name: 'Tandoori Chicken', price: 260, desc: 'Marinated and grilled to perfection', icon: '🍖', featured: true, popular: true },
+            { id: 3, name: 'Naan', price: 80, desc: 'Freshly baked Indian bread', icon: '🍞', featured: false, popular: true },
+            { id: 4, name: 'Biryani', price: 250, desc: 'Fragrant rice with spiced meat', icon: '🍚', featured: true, popular: true },
+            { id: 5, name: 'Paneer Tikka', price: 220, desc: 'Grilled cottage cheese cubes', icon: '🧀', featured: false, popular: true },
+            { id: 6, name: 'Garlic Naan', price: 100, desc: 'Naan with aromatic garlic', icon: '🌾', featured: true, popular: false },
+            { id: 7, name: 'Mango Lassi', price: 90, desc: 'Refreshing yogurt drink', icon: '🥤', featured: false, popular: true },
+            { id: 8, name: 'Samosa', price: 60, desc: 'Crispy potato-filled pastry', icon: '🥟', featured: true, popular: false },
+            { id: 9, name: 'Gulab Jamun', price: 120, desc: 'Sweet milk dumplings in syrup', icon: '🍡', featured: false, popular: true },
+            { id: 10, name: 'Raita', price: 50, desc: 'Yogurt with cucumber & spices', icon: '🥒', featured: false, popular: false },
+        ];
+
+        const comboOffers = [
+            { name: 'Family Feast', items: ['1x Butter Chicken', '1x Tandoori Chicken', '3x Naan', '1x Gulab Jamun'], original: 1200, offer: 899, save: 301 },
+            { name: 'Lunch Special', items: ['1x Biryani', '1x Raita', '1x Lassi'], original: 390, offer: 299, save: 91 },
+            { name: 'Starter Pack', items: ['2x Samosa', '1x Paneer Tikka', '1x Naan'], original: 460, offer: 349, save: 111 },
+        ];
+
+        let modalData = { id: null, quantity: 1 };
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+        function renderFeaturedDishes() {
+            const featured = menuData.filter(item => item.featured);
+            document.getElementById('featuredGrid').innerHTML = featured.map(item => createFoodCard(item)).join('');
+        }
+
+        function renderPopularItems() {
+            const popular = menuData.filter(item => item.popular);
+            document.getElementById('popularGrid').innerHTML = popular.map(item => createFoodCard(item)).join('');
+        }
+
+        function createFoodCard(item) {
+            return `
+                <div class="food-card" onclick="openAddToCartModal(${item.id})">
+                    <div class="food-image">${item.icon}</div>
+                    <div class="food-info">
+                        <div class="badge badge-featured">Featured</div>
+                        <div class="food-name">${item.name}</div>
+                        <div class="food-desc">${item.desc}</div>
+                        <div class="food-footer">
+                            <div class="food-price">₹${item.price}</div>
+                            <div class="food-rating">⭐ 4.8</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderCombos() {
+            const html = comboOffers.map(combo => `
+                <div class="combo-card">
+                    <div class="combo-header">
+                        <div class="combo-info">
+                            <h3>${combo.name}</h3>
+                            <div class="combo-items">${combo.items.join(' • ')}</div>
+                        </div>
+                        <div class="combo-price">
+                            <div class="combo-original">₹${combo.original}</div>
+                            <div class="combo-offer">₹${combo.offer}</div>
+                            <div class="combo-save">Save ₹${combo.save}</div>
+                        </div>
+                    </div>
+                    <button class="combo-btn" onclick="addComboToCart('${combo.name}', ${combo.offer})">Add Combo to Cart</button>
+                </div>
+            `).join('');
+            document.getElementById('combosGrid').innerHTML = html;
+        }
+
+        function openAddToCartModal(itemId) {
+            const item = menuData.find(i => i.id === itemId);
+            if (!item) return;
+
+            modalData = { id: itemId, quantity: 1 };
+            document.getElementById('modalFoodName').textContent = item.name;
+            document.getElementById('modalPrice').textContent = '₹' + item.price;
+            document.getElementById('qtyDisplay').textContent = '1';
+            document.getElementById('backdrop').classList.add('active');
+            document.getElementById('addToCartModal').classList.add('active');
+        }
+
+        function increaseQty() {
+            modalData.quantity++;
+            document.getElementById('qtyDisplay').textContent = modalData.quantity;
+        }
+
+        function decreaseQty() {
+            if (modalData.quantity > 1) {
+                modalData.quantity--;
+                document.getElementById('qtyDisplay').textContent = modalData.quantity;
+            }
+        }
+
+        function confirmAddToCart() {
+            const item = menuData.find(i => i.id === modalData.id);
+            if (!item) return;
+
+            const existingItem = cart.find(c => c.id === modalData.id);
+            if (existingItem) {
+                existingItem.quantity += modalData.quantity;
+            } else {
+                cart.push({
+                    id: modalData.id,
+                    name: item.name,
+                    price: item.price,
+                    quantity: modalData.quantity
+                });
+            }
+
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+            closeModal();
+            showNotification(`${item.name} added to cart!`);
+        }
+
+        function addComboToCart(comboName, price) {
+            const existingItem = cart.find(c => c.name === comboName && c.isCombo);
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cart.push({
+                    id: Date.now(),
+                    name: comboName,
+                    price: price,
+                    quantity: 1,
+                    isCombo: true
+                });
+            }
+
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+            showNotification(`${comboName} added to cart!`);
+        }
+
+        function closeModal() {
+            document.getElementById('addToCartModal').classList.remove('active');
+            document.getElementById('backdrop').classList.remove('active');
+        }
+
+        function updateCartCount() {
+            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+            const badge = document.getElementById('cartCount');
+            if (count > 0) {
+                badge.textContent = count;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        function goToCart() {
+            window.location.href = 'customer-cart.html';
+        }
+
+        function showNotification(message) {
+            console.log(`✓ ${message}`);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderFeaturedDishes();
+            renderPopularItems();
+            renderCombos();
+            updateCartCount();
+        });
+    </script>
+
+</body>
+
+</html>

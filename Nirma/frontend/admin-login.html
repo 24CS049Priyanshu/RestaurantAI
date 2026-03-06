@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Admin Login — RestaurantAI Management System" />
+    <title>Admin Login — RestaurantAI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet" />
+
+    <style>
+        /* ── Reset ────────────────────────────────────────────────────── */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ── Variables ────────────────────────────────────────────────── */
+        :root {
+            --accent: #a855f7;
+            --accent-dark: #7c3aed;
+            --accent-glow: rgba(168, 85, 247, 0.22);
+            --bg: #0a0a0f;
+            --card: rgba(255, 255, 255, 0.04);
+            --border: rgba(255, 255, 255, 0.09);
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --error: #f87171;
+            --error-bg: rgba(239, 68, 68, 0.10);
+            --error-border: rgba(239, 68, 68, 0.22);
+            --success: #34d399;
+        }
+
+        /* ── Base ─────────────────────────────────────────────────────── */
+        html {
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 1.5rem 1rem;
+            position: relative;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Animated background ──────────────────────────────────────── */
+        .bg-layer {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background: radial-gradient(ellipse 80% 60% at 50% 20%, rgba(168, 85, 247, 0.10) 0%, transparent 70%),
+                linear-gradient(160deg, #0a0a0f 0%, #100d1e 60%, #090914 100%);
+        }
+
+        .grid-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background-image:
+                linear-gradient(rgba(168, 85, 247, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(168, 85, 247, 0.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+            mask-image: radial-gradient(ellipse 70% 70% at 50% 50%, black 40%, transparent 100%);
+        }
+
+        /* ── Keyframes ───────────────────────────────────────────────── */
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0)
+            }
+
+            50% {
+                transform: translateY(-12px)
+            }
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        @keyframes pulse-dot {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1)
+            }
+
+            50% {
+                opacity: .5;
+                transform: scale(.85)
+            }
+        }
+
+        @keyframes success-in {
+            from {
+                opacity: 0;
+                transform: scale(.8)
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1)
+            }
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0)
+            }
+
+            20%,
+            60% {
+                transform: translateX(-6px)
+            }
+
+            40%,
+            80% {
+                transform: translateX(6px)
+            }
+        }
+
+        /* ── Back link ─────────────────────────────────────────────────*/
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 1.6rem;
+            align-self: flex-start;
+            width: 100%;
+            max-width: 420px;
+            transition: color .2s;
+        }
+
+        .back-link:hover {
+            color: var(--text);
+        }
+
+        .back-link span {
+            display: inline-block;
+            transition: transform .2s;
+        }
+
+        .back-link:hover span {
+            transform: translateX(-3px);
+        }
+
+        /* ── Card ──────────────────────────────────────────────────────*/
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 1.5rem;
+            padding: 2.5rem 2.25rem;
+            width: 100%;
+            max-width: 420px;
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            box-shadow: 0 32px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(168, 85, 247, 0.06) inset;
+            animation: fadeUp .55s ease-out both;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Subtle inner glow */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(180deg, rgba(168, 85, 247, 0.07) 0%, transparent 100%);
+            pointer-events: none;
+        }
+
+        /* ── Card top bar ──────────────────────────────────────────────*/
+        .top-bar {
+            height: 3px;
+            width: 100%;
+            border-radius: 99px;
+            background: linear-gradient(90deg, var(--accent-dark), var(--accent), #c084fc);
+            margin-bottom: 2rem;
+        }
+
+        /* ── Card header ───────────────────────────────────────────────*/
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .icon-box {
+            width: 58px;
+            height: 58px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.7rem;
+            background: rgba(168, 85, 247, 0.12);
+            border: 1px solid rgba(168, 85, 247, 0.25);
+            flex-shrink: 0;
+            animation: float 5s ease-in-out infinite;
+        }
+
+        .role-tag {
+            font-size: 0.62rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .12em;
+            color: var(--accent);
+            margin-bottom: .25rem;
+        }
+
+        .card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        /* Subtitle */
+        .card-subtitle {
+            font-size: .8rem;
+            color: var(--muted);
+            margin-bottom: 1.6rem;
+            line-height: 1.5;
+        }
+
+        /* Access chips */
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .4rem;
+            margin-bottom: 1.6rem;
+        }
+
+        .chip {
+            font-size: .65rem;
+            font-weight: 600;
+            padding: .22rem .6rem;
+            border-radius: 7px;
+            background: rgba(168, 85, 247, 0.09);
+            color: #c084fc;
+            border: 1px solid rgba(168, 85, 247, 0.2);
+        }
+
+        /* Divider */
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, rgba(168, 85, 247, .45), transparent);
+            margin: 1.25rem 0;
+        }
+
+        /* ── Form ──────────────────────────────────────────────────────*/
+        .form-group {
+            margin-bottom: 1.1rem;
+        }
+
+        label {
+            display: block;
+            font-size: .78rem;
+            font-weight: 600;
+            color: #cbd5e1;
+            margin-bottom: .42rem;
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .i-icon {
+            position: absolute;
+            left: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #475569;
+            font-size: .95rem;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        input[type="email"],
+        input[type="password"],
+        input[type="text"] {
+            width: 100%;
+            padding: .8rem 1rem .8rem 2.35rem;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid rgba(255, 255, 255, .1);
+            border-radius: 11px;
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-size: .875rem;
+            outline: none;
+            transition: border-color .25s, box-shadow .25s, background .25s;
+            -webkit-appearance: none;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+            background: rgba(168, 85, 247, .05);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        input.invalid {
+            border-color: #ef4444;
+            animation: shake .35s ease;
+        }
+
+        input::placeholder {
+            color: rgba(148, 163, 184, .4);
+        }
+
+        /* Char strength bar under password */
+        .strength-bar {
+            display: flex;
+            gap: 3px;
+            margin-top: 6px;
+        }
+
+        .strength-segment {
+            flex: 1;
+            height: 3px;
+            border-radius: 99px;
+            background: rgba(255, 255, 255, .07);
+            transition: background .35s;
+        }
+
+        /* Show/hide button */
+        .eye-btn {
+            position: absolute;
+            right: 11px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #475569;
+            cursor: pointer;
+            padding: 4px;
+            font-size: .9rem;
+            transition: color .2s;
+            line-height: 1;
+        }
+
+        .eye-btn:hover {
+            color: var(--accent);
+        }
+
+        /* Form footer row */
+        .form-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.35rem;
+            font-size: .78rem;
+        }
+
+        .check-label {
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+            color: var(--muted);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .check-label input[type=checkbox] {
+            width: 15px;
+            height: 15px;
+            accent-color: var(--accent);
+            /* remove inherited input styles */
+            padding: 0;
+            background: none;
+            border: none;
+            box-shadow: none;
+        }
+
+        .link {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            transition: opacity .2s;
+        }
+
+        .link:hover {
+            opacity: .75;
+        }
+
+        /* ── Error banner ──────────────────────────────────────────────*/
+        .alert {
+            display: none;
+            align-items: flex-start;
+            gap: .5rem;
+            padding: .7rem .9rem;
+            border-radius: 10px;
+            font-size: .78rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+
+        .alert.error {
+            display: flex;
+            background: var(--error-bg);
+            border: 1px solid var(--error-border);
+            color: var(--error);
+        }
+
+        .alert.success {
+            display: flex;
+            background: rgba(52, 211, 153, .1);
+            border: 1px solid rgba(52, 211, 153, .25);
+            color: var(--success);
+        }
+
+        /* ── Submit button ─────────────────────────────────────────────*/
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .5rem;
+            width: 100%;
+            padding: .88rem 1rem;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: .92rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform .25s, box-shadow .25s, opacity .25s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, .12), transparent);
+            opacity: 0;
+            transition: opacity .25s;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(168, 85, 247, .45);
+        }
+
+        .btn:hover:not(:disabled)::after {
+            opacity: 1;
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, .3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin .7s linear infinite;
+            display: none;
+            flex-shrink: 0;
+        }
+
+        .btn.loading .spinner {
+            display: block;
+        }
+
+        .btn.loading .btn-text {
+            opacity: .75;
+        }
+
+        /* ── Footer note ───────────────────────────────────────────────*/
+        .card-footer {
+            text-align: center;
+            font-size: .7rem;
+            color: #374151;
+            margin-top: 1.25rem;
+        }
+
+        /* ── Success overlay ───────────────────────────────────────────*/
+        .success-overlay {
+            position: absolute;
+            inset: 0;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: .75rem;
+            background: rgba(10, 10, 15, .92);
+            backdrop-filter: blur(8px);
+            border-radius: inherit;
+            z-index: 10;
+            animation: success-in .4s ease both;
+        }
+
+        .success-overlay.show {
+            display: flex;
+        }
+
+        .success-icon {
+            font-size: 3rem;
+        }
+
+        .success-text {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--success);
+        }
+
+        .success-sub {
+            font-size: .78rem;
+            color: var(--muted);
+        }
+
+        /* ── Responsive ────────────────────────────────────────────────*/
+        @media (max-width: 480px) {
+            .card {
+                padding: 2rem 1.5rem;
+            }
+
+            .card-title {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="bg-layer"></div>
+    <div class="grid-overlay"></div>
+
+    <!-- Back link -->
+    <a href="index.html" class="back-link" aria-label="Back to portal selection">
+        <span>←</span> Back to Portal
+    </a>
+
+    <!-- ── Card ─────────────────────────────────────────────────── -->
+    <div class="card" id="card" role="main">
+
+        <!-- Success overlay -->
+        <div class="success-overlay" id="successOverlay" aria-live="polite">
+            <div class="success-icon">✅</div>
+            <div class="success-text">Login Successful!</div>
+            <div class="success-sub">Redirecting to Admin Dashboard…</div>
+        </div>
+
+        <!-- Top gradient bar -->
+        <div class="top-bar"></div>
+
+        <!-- Header -->
+        <div class="card-header">
+            <div class="icon-box" aria-hidden="true">🛡️</div>
+            <div>
+                <div class="role-tag">Super Admin</div>
+                <div class="card-title">Admin Portal</div>
+            </div>
+        </div>
+
+        <p class="card-subtitle">
+            Full platform control — restaurants, users, analytics and system configuration.
+        </p>
+
+        <!-- Access chips -->
+        <div class="chips" role="list" aria-label="Admin privileges">
+            <span class="chip" role="listitem">Platform Control</span>
+            <span class="chip" role="listitem">All Restaurants</span>
+            <span class="chip" role="listitem">System Analytics</span>
+            <span class="chip" role="listitem">User Management</span>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- ── Login Form ─────────────────────────────────────────── -->
+        <form id="loginForm" novalidate autocomplete="on">
+
+            <!-- Alert -->
+            <div class="alert" id="alertBox" role="alert" aria-live="assertive">
+                <span>⚠️</span>
+                <span id="alertText"></span>
+            </div>
+
+            <!-- Email -->
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <div class="input-wrap">
+                    <span class="i-icon" aria-hidden="true">✉</span>
+                    <input type="email" id="email" name="email" placeholder="admin@restaurantai.com"
+                        autocomplete="email" aria-required="true" />
+                </div>
+            </div>
+
+            <!-- Password -->
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="input-wrap">
+                    <span class="i-icon" aria-hidden="true">🔒</span>
+                    <input type="password" id="password" name="password" placeholder="Enter your password"
+                        autocomplete="current-password" aria-required="true" />
+                    <button type="button" class="eye-btn" id="eyeBtn" onclick="toggleEye()"
+                        aria-label="Show password">👁</button>
+                </div>
+                <!-- Strength bar -->
+                <div class="strength-bar" id="strengthBar" aria-hidden="true">
+                    <div class="strength-segment" id="s1"></div>
+                    <div class="strength-segment" id="s2"></div>
+                    <div class="strength-segment" id="s3"></div>
+                    <div class="strength-segment" id="s4"></div>
+                </div>
+            </div>
+
+            <!-- Remember / Forgot -->
+            <div class="form-row">
+                <label class="check-label">
+                    <input type="checkbox" id="remember" name="remember"> Remember me
+                </label>
+                <a href="#" class="link" onclick="forgotPwd(event)">Forgot password?</a>
+            </div>
+
+            <!-- Submit -->
+            <button type="submit" class="btn" id="submitBtn" aria-live="polite">
+                <div class="spinner" id="spinner" aria-hidden="true"></div>
+                <span class="btn-text" id="btnText">Sign in as Admin</span>
+            </button>
+
+        </form>
+
+        <p class="card-footer">🔐 SOC 2 Compliant · 2FA Protected · 256-bit TLS</p>
+
+    </div><!-- /card -->
+
+    <!-- ─────────────────────────────── SCRIPT ─────────────────────── -->
+    <script>
+        "use strict";
+
+        /* ── Password strength bar ─────────────────────────────────── */
+        const strengthColors = ['#ef4444', '#f97316', '#eab308', '#22c55e'];
+
+        document.getElementById('password').addEventListener('input', function () {
+            const v = this.value;
+            let score = 0;
+            if (v.length >= 8) score++;
+            if (/[A-Z]/.test(v)) score++;
+            if (/[0-9]/.test(v)) score++;
+            if (/[^A-Za-z0-9]/.test(v)) score++;
+
+            ['s1', 's2', 's3', 's4'].forEach((id, i) => {
+                const seg = document.getElementById(id);
+                seg.style.background = i < score ? strengthColors[score - 1] : 'rgba(255,255,255,.07)';
+            });
+        });
+
+        /* ── Show / Hide password ──────────────────────────────────── */
+        function toggleEye() {
+            const inp = document.getElementById('password');
+            const btn = document.getElementById('eyeBtn');
+            if (inp.type === 'password') {
+                inp.type = 'text';
+                btn.textContent = '🙈';
+                btn.setAttribute('aria-label', 'Hide password');
+            } else {
+                inp.type = 'password';
+                btn.textContent = '👁';
+                btn.setAttribute('aria-label', 'Show password');
+            }
+        }
+
+        /* ── Alert helpers ─────────────────────────────────────────── */
+        function showAlert(msg) {
+            const box = document.getElementById('alertBox');
+            document.getElementById('alertText').textContent = msg;
+            box.className = 'alert error';
+        }
+
+        function clearAlert() {
+            document.getElementById('alertBox').className = 'alert';
+        }
+
+        /* ── Mark invalid field ─────────────────────────────────────── */
+        function markInvalid(id) {
+            const el = document.getElementById(id);
+            el.classList.add('invalid');
+            el.addEventListener('input', () => el.classList.remove('invalid'), { once: true });
+        }
+
+        /* ── Forgot password ────────────────────────────────────────── */
+        function forgotPwd(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value.trim();
+            if (email && email.includes('@')) {
+                alert(`📧 Password reset instructions sent to:\n${email}`);
+            } else {
+                alert('Enter your email address first, then click Forgot password.');
+            }
+        }
+
+        /* ── Form submit ────────────────────────────────────────────── */
+        document.getElementById('loginForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            clearAlert();
+
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('submitBtn');
+            const spinner = document.getElementById('spinner');
+            const btnText = document.getElementById('btnText');
+
+            /* — Validate — */
+            if (!email) {
+                showAlert('Please enter your email address.');
+                markInvalid('email');
+                return;
+            }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showAlert('Please enter a valid email address.');
+                markInvalid('email');
+                return;
+            }
+            if (!password) {
+                showAlert('Please enter your password.');
+                markInvalid('password');
+                return;
+            }
+            if (password.length < 6) {
+                showAlert('Password must be at least 6 characters.');
+                markInvalid('password');
+                return;
+            }
+
+            /* — Loading state — */
+            btn.disabled = true;
+            btn.classList.add('loading');
+            btnText.textContent = 'Authenticating…';
+
+            /* — Simulate API call — */
+            await new Promise(r => setTimeout(r, 1500));
+
+            /* — Check demo credentials — */
+            const validEmail = 'admin@demo.com';
+            const validPass = 'Admin@123';
+
+            if (email === validEmail && password === validPass) {
+                /* Success */
+                btn.classList.remove('loading');
+                document.getElementById('successOverlay').classList.add('show');
+                setTimeout(() => { window.location.href = 'admin-dashboard.html'; }, 1600);
+            } else {
+                /* Failure */
+                btn.disabled = false;
+                btn.classList.remove('loading');
+                btnText.textContent = 'Sign in as Admin';
+                showAlert('Invalid credentials.\nDemo: admin@demo.com / Admin@123');
+                markInvalid('email');
+                markInvalid('password');
+            }
+        });
+
+        /* — Clear alert on typing — */
+        ['email', 'password'].forEach(id =>
+            document.getElementById(id).addEventListener('input', clearAlert)
+        );
+    </script>
+</body>
+
+</html>

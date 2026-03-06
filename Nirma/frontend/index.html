@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="AI-Powered Restaurant Management System — Choose your portal" />
+    <title>RestaurantAI — Management System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet" />
+    <style>
+        /* ── Reset ────────────────────────────────────────────────────── */
+        
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        /* ── CSS Variables ────────────────────────────────────────────── */
+        
+         :root {
+            --bg-deep: #0a0a0f;
+            --bg-mid: #12121c;
+            --bg-card: rgba(255, 255, 255, 0.04);
+            --border: rgba(255, 255, 255, 0.08);
+            --text-primary: #f1f5f9;
+            --text-muted: #94a3b8;
+            --orange: #f97316;
+            --orange-dark: #ea580c;
+            --orange-light: #fb923c;
+            --purple: #a855f7;
+            --teal: #14b8a6;
+            --radius-xl: 1.25rem;
+            --radius-2xl: 1.5rem;
+            --shadow-card: 0 25px 60px rgba(0, 0, 0, 0.55);
+        }
+        /* ── Base ─────────────────────────────────────────────────────── */
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+         ::-webkit-scrollbar {
+            width: 5px;
+        }
+        
+         ::-webkit-scrollbar-track {
+            background: var(--bg-mid);
+        }
+        
+         ::-webkit-scrollbar-thumb {
+            background: var(--orange);
+            border-radius: 3px;
+        }
+        /* ── Animations ───────────────────────────────────────────────── */
+        
+        @keyframes float {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-14px);
+            }
+        }
+        
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(28px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes shimmer {
+            0% {
+                background-position: -200% center;
+            }
+            100% {
+                background-position: 200% center;
+            }
+        }
+        
+        @keyframes pulse-ring {
+            0%,
+            100% {
+                opacity: 0.15;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% {
+                opacity: 0.25;
+                transform: translate(-50%, -50%) scale(1.04);
+            }
+        }
+        
+        @keyframes particle-float {
+            0% {
+                transform: translateY(0) translateX(0) scale(1);
+                opacity: 0.4;
+            }
+            50% {
+                transform: translateY(-30px) translateX(8px) scale(1.2);
+                opacity: 0.7;
+            }
+            100% {
+                transform: translateY(0) translateX(0) scale(1);
+                opacity: 0.4;
+            }
+        }
+        
+        @keyframes dash {
+            from {
+                transform: scaleX(0);
+            }
+            to {
+                transform: scaleX(1);
+            }
+        }
+        /* ── Background canvas ────────────────────────────────────────── */
+        
+        .bg-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background: linear-gradient(135deg, #0a0a0f 0%, #111128 45%, #0f1a2e 100%);
+            overflow: hidden;
+        }
+        /* Floating particles */
+        
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--orange);
+            opacity: 0.35;
+        }
+        /* Decorative rings */
+        
+        .ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            border-radius: 50%;
+            border: 1px solid rgba(249, 115, 22, 0.15);
+            animation: pulse-ring 5s ease-in-out infinite;
+        }
+        /* Orange glow blob */
+        
+        .glow-blob {
+            position: absolute;
+            top: 35%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 700px;
+            height: 700px;
+            border-radius: 50%;
+            background: radial-gradient(ellipse, rgba(249, 115, 22, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        /* ── Layout ───────────────────────────────────────────────────── */
+        
+        .page-wrapper {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        /* ── Navbar ───────────────────────────────────────────────────── */
+        
+        .navbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem 2rem;
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10, 10, 15, 0.7);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+        }
+        
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--orange-dark), var(--orange));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            animation: float 5s ease-in-out infinite;
+            box-shadow: 0 0 20px rgba(249, 115, 22, 0.45);
+        }
+        
+        .logo-text .brand {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #fff;
+            font-family: 'Playfair Display', serif;
+            line-height: 1.1;
+        }
+        
+        .logo-text .tagline {
+            font-size: 0.65rem;
+            color: var(--orange);
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+        
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1.75rem;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        
+        .nav-links a:hover {
+            color: var(--orange);
+        }
+        
+        .nav-cta {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 10px;
+            padding: 0.45rem 1.1rem;
+            color: #fff;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+        
+        .nav-cta:hover {
+            border-color: var(--orange);
+            color: var(--orange);
+        }
+        /* Mobile hamburger */
+        
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            cursor: pointer;
+            padding: 4px;
+        }
+        
+        .hamburger span {
+            display: block;
+            width: 22px;
+            height: 2px;
+            background: var(--text-muted);
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+        /* ── Hero ─────────────────────────────────────────────────────── */
+        
+        .hero {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 1.5rem 3rem;
+            text-align: center;
+        }
+        /* AI badge */
+        
+        .ai-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1.1rem;
+            border-radius: 999px;
+            border: 1px solid rgba(249, 115, 22, 0.25);
+            background: rgba(249, 115, 22, 0.07);
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--orange);
+            margin-bottom: 1.75rem;
+            animation: fadeUp 0.6s ease-out both;
+        }
+        
+        .ai-badge .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--orange);
+            animation: pulse-ring 1.8s ease-in-out infinite;
+        }
+        /* Headline */
+        
+        .hero-headline {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.4rem, 6vw, 4.5rem);
+            font-weight: 700;
+            line-height: 1.12;
+            color: #fff;
+            margin-bottom: 1rem;
+            animation: fadeUp 0.6s 0.1s ease-out both;
+        }
+        
+        .hero-headline .shimmer {
+            background: linear-gradient(90deg, var(--orange) 0%, #fbbf24 50%, var(--orange) 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3.5s linear infinite;
+        }
+        
+        .hero-sub {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            max-width: 520px;
+            line-height: 1.7;
+            margin-bottom: 2.25rem;
+            animation: fadeUp 0.6s 0.15s ease-out both;
+        }
+        /* Stats row */
+        
+        .stats {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 3.5rem;
+            animation: fadeUp 0.6s 0.2s ease-out both;
+        }
+        
+        .stat-pill {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0.55rem 1.1rem;
+            text-align: center;
+            backdrop-filter: blur(8px);
+        }
+        
+        .stat-pill .val {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--orange);
+        }
+        
+        .stat-pill .lbl {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+        /* ── Cards Grid ───────────────────────────────────────────────── */
+        
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+            width: 100%;
+            max-width: 960px;
+            animation: fadeUp 0.6s 0.25s ease-out both;
+        }
+        /* ── Role Card ────────────────────────────────────────────────── */
+        
+        .role-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-2xl);
+            padding: 2rem 1.75rem;
+            cursor: pointer;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+            backdrop-filter: blur(16px);
+            text-decoration: none;
+            display: block;
+        }
+        
+        .role-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+            transform-origin: left;
+            transform: scaleX(0.25);
+            transition: transform 0.4s ease;
+        }
+        
+        .role-card:hover {
+            transform: translateY(-6px);
+            background: rgba(255, 255, 255, 0.07);
+        }
+        
+        .role-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .role-card:active {
+            transform: translateY(-2px);
+        }
+        /* Accent colours per card */
+        
+        .card-admin {
+            --accent: #a855f7;
+            --accent2: #7c3aed;
+        }
+        
+        .card-manager {
+            --accent: #f97316;
+            --accent2: #dc2626;
+        }
+        
+        .card-customer {
+            --accent: #14b8a6;
+            --accent2: #0891b2;
+        }
+        
+        .role-card:hover {
+            border-color: rgba(var(--accent-rgb, 249, 115, 22), 0.35);
+            box-shadow: 0 20px 55px rgba(0, 0, 0, 0.5), 0 0 35px rgba(var(--accent-rgb, 249, 115, 22), 0.1);
+        }
+        
+        .card-admin::before {
+            background: linear-gradient(90deg, #a855f7, #7c3aed);
+        }
+        
+        .card-manager::before {
+            background: linear-gradient(90deg, #f97316, #dc2626);
+        }
+        
+        .card-customer::before {
+            background: linear-gradient(90deg, #14b8a6, #0891b2);
+        }
+        
+        .card-admin:hover {
+            border-color: rgba(168, 85, 247, 0.4);
+            box-shadow: 0 20px 55px rgba(0, 0, 0, 0.5), 0 0 40px rgba(168, 85, 247, 0.12);
+        }
+        
+        .card-manager:hover {
+            border-color: rgba(249, 115, 22, 0.4);
+            box-shadow: 0 20px 55px rgba(0, 0, 0, 0.5), 0 0 40px rgba(249, 115, 22, 0.12);
+        }
+        
+        .card-customer:hover {
+            border-color: rgba(20, 184, 166, 0.4);
+            box-shadow: 0 20px 55px rgba(0, 0, 0, 0.5), 0 0 40px rgba(20, 184, 166, 0.12);
+        }
+        /* Card icon */
+        
+        .card-icon-wrap {
+            width: 58px;
+            height: 58px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            margin-bottom: 1.25rem;
+            transition: transform 0.3s;
+        }
+        
+        .role-card:hover .card-icon-wrap {
+            transform: scale(1.1) rotate(-3deg);
+        }
+        
+        .card-admin .card-icon-wrap {
+            background: rgba(168, 85, 247, 0.15);
+            border: 1px solid rgba(168, 85, 247, 0.25);
+        }
+        
+        .card-manager .card-icon-wrap {
+            background: rgba(249, 115, 22, 0.15);
+            border: 1px solid rgba(249, 115, 22, 0.25);
+        }
+        
+        .card-customer .card-icon-wrap {
+            background: rgba(20, 184, 166, 0.15);
+            border: 1px solid rgba(20, 184, 166, 0.25);
+        }
+        /* Badge */
+        
+        .card-badge {
+            display: inline-block;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+        
+        .card-admin .card-badge {
+            background: rgba(168, 85, 247, 0.15);
+            color: #c084fc;
+            border: 1px solid rgba(168, 85, 247, 0.25);
+        }
+        
+        .card-manager .card-badge {
+            background: rgba(249, 115, 22, 0.15);
+            color: var(--orange-light);
+            border: 1px solid rgba(249, 115, 22, 0.25);
+        }
+        
+        .card-customer .card-badge {
+            background: rgba(20, 184, 166, 0.15);
+            color: #2dd4bf;
+            border: 1px solid rgba(20, 184, 166, 0.25);
+        }
+        /* Card title */
+        
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff;
+            font-family: 'Playfair Display', serif;
+            margin-bottom: 0.55rem;
+        }
+        /* Card description */
+        
+        .card-desc {
+            font-size: 0.825rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        /* Bullet features */
+        
+        .card-features {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            margin-bottom: 1.6rem;
+        }
+        
+        .card-features li {
+            font-size: 0.75rem;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+        
+        .card-features li::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
+        .card-admin .card-features li::before {
+            background: #a855f7;
+        }
+        
+        .card-manager .card-features li::before {
+            background: var(--orange);
+        }
+        
+        .card-customer .card-features li::before {
+            background: #14b8a6;
+        }
+        /* CTA arrow row */
+        
+        .card-cta {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-size: 0.82rem;
+            font-weight: 600;
+            transition: gap 0.25s;
+        }
+        
+        .role-card:hover .card-cta {
+            gap: 0.75rem;
+        }
+        
+        .card-admin .card-cta {
+            color: #a855f7;
+        }
+        
+        .card-manager .card-cta {
+            color: var(--orange);
+        }
+        
+        .card-customer .card-cta {
+            color: #14b8a6;
+        }
+        
+        .cta-arrow {
+            font-size: 1rem;
+            transition: transform 0.25s;
+        }
+        
+        .role-card:hover .cta-arrow {
+            transform: translateX(4px);
+        }
+        /* ── Footer ───────────────────────────────────────────────────── */
+        
+        .footer-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(249, 115, 22, 0.4), transparent);
+            margin-top: 4rem;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 1.25rem;
+            font-size: 0.72rem;
+            color: #374151;
+        }
+        /* ── Responsive ───────────────────────────────────────────────── */
+        
+        @media (max-width: 900px) {
+            .cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+                max-width: 640px;
+            }
+            .card-customer {
+                grid-column: 1 / -1;
+                max-width: 340px;
+                margin: 0 auto;
+                width: 100%;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .nav-links,
+            .nav-cta {
+                display: none;
+            }
+            .hamburger {
+                display: flex;
+            }
+            .cards-grid {
+                grid-template-columns: 1fr;
+                max-width: 380px;
+            }
+            .card-customer {
+                grid-column: auto;
+                max-width: none;
+            }
+            .hero-headline {
+                font-size: 2rem;
+            }
+            .stats {
+                gap: 0.5rem;
+            }
+            .stat-pill {
+                padding: 0.4rem 0.75rem;
+            }
+            .navbar {
+                padding: 1rem 1.25rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ── Background canvas ─────────────────────────────────────── -->
+    <div class="bg-canvas" id="bgCanvas">
+        <div class="glow-blob"></div>
+    </div>
+
+    <!-- ── Page wrapper ──────────────────────────────────────────── -->
+    <div class="page-wrapper">
+
+        <!-- ── Navbar ─────────────────────────────────────────────── -->
+        <nav class="navbar" role="navigation" aria-label="Main navigation">
+            <a href="index.html" class="logo">
+                <div class="logo-icon" aria-hidden="true">🍜</div>
+                <div class="logo-text">
+                    <div class="brand">RestaurantAI</div>
+                    <div class="tagline">Revenue Intelligence</div>
+                </div>
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="#">Features</a></li>
+                <li><a href="#">Pricing</a></li>
+                <li><a href="#">Docs</a></li>
+            </ul>
+
+            <button class="nav-cta" onclick="showDemo()">Request Demo</button>
+            <div class="hamburger" onclick="toggleMenu()" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </div>
+        </nav>
+
+        <!-- ── Hero ───────────────────────────────────────────────── -->
+        <main class="hero" id="main-content">
+
+            <!-- AI badge -->
+            <div class="ai-badge" role="note">
+                <span class="dot" aria-hidden="true"></span> AI-Powered Revenue Intelligence Engine
+            </div>
+
+            <!-- Headline -->
+            <h1 class="hero-headline">
+                Smart Restaurant<br>
+                <span class="shimmer">Management</span>
+            </h1>
+
+            <p class="hero-sub" id="hero-desc">
+                AI-driven insights, voice ordering, dynamic pricing &amp; combo intelligence — all in one platform built for modern restaurants.
+            </p>
+
+            <!-- Stats -->
+            <div class="stats" role="list" aria-label="Platform statistics">
+                <div class="stat-pill" role="listitem">
+                    <div class="val">98%</div>
+                    <div class="lbl">Order Accuracy</div>
+                </div>
+                <div class="stat-pill" role="listitem">
+                    <div class="val">3.2×</div>
+                    <div class="lbl">Revenue Lift</div>
+                </div>
+                <div class="stat-pill" role="listitem">
+                    <div class="val">12s</div>
+                    <div class="lbl">Voice Order Speed</div>
+                </div>
+                <div class="stat-pill" role="listitem">
+                    <div class="val">500+</div>
+                    <div class="lbl">Restaurants</div>
+                </div>
+            </div>
+
+            <!-- Choose portal label -->
+            <p style="font-size:0.78rem;color:#475569;text-transform:uppercase;letter-spacing:0.12em;font-weight:600;margin-bottom:1.25rem;">
+                Choose your portal
+            </p>
+
+            <!-- ── Cards Grid ─────────────────────────────────────── -->
+            <div class="cards-grid" role="list" aria-label="Login portals">
+
+                <!-- Admin Card -->
+                <a href="admin-login.html" class="role-card card-admin" role="listitem" aria-label="Admin Portal — Login as Super Admin">
+                    <div class="card-icon-wrap" aria-hidden="true">🛡️</div>
+                    <div class="card-badge">Super Admin</div>
+                    <div class="card-title">Admin Portal</div>
+                    <p class="card-desc">Full platform control — manage restaurants, users, subscriptions &amp; analytics.
+                    </p>
+                    <ul class="card-features">
+                        <li>Platform-wide control</li>
+                        <li>All restaurant access</li>
+                        <li>System analytics</li>
+                    </ul>
+                    <div class="card-cta">
+                        Sign in <span class="cta-arrow" aria-hidden="true">→</span>
+                    </div>
+                </a>
+
+                <!-- Restaurant Manager Card -->
+                <a href="restaurant-login.html" class="role-card card-manager" role="listitem" aria-label="Restaurant Manager Login">
+                    <div class="card-icon-wrap" aria-hidden="true">🍽️</div>
+                    <div class="card-badge">Manager</div>
+                    <div class="card-title">Restaurant Manager</div>
+                    <p class="card-desc">Menu, orders, revenue intelligence, combo recommendations &amp; price optimization.
+                    </p>
+                    <ul class="card-features">
+                        <li>AI Revenue Insights</li>
+                        <li>Voice Order Console</li>
+                        <li>Price Optimizer</li>
+                    </ul>
+                    <div class="card-cta">
+                        Sign in <span class="cta-arrow" aria-hidden="true">→</span>
+                    </div>
+                </a>
+
+                <!-- Customer Card -->
+                <a href="customer-login.html" class="role-card card-customer" role="listitem" aria-label="Customer Login">
+                    <div class="card-icon-wrap" aria-hidden="true">🛒</div>
+                    <div class="card-badge">Guest / Member</div>
+                    <div class="card-title">Customer</div>
+                    <p class="card-desc">Browse the menu, place orders, track delivery &amp; enjoy AI-powered personal recommendations.
+                    </p>
+                    <ul class="card-features">
+                        <li>Loyalty rewards</li>
+                        <li>Real-time tracking</li>
+                        <li>AI recommendations</li>
+                    </ul>
+                    <div class="card-cta">
+                        Sign in <span class="cta-arrow" aria-hidden="true">→</span>
+                    </div>
+                </a>
+
+            </div>
+            <!-- /cards-grid -->
+
+            <p style="margin-top:2.5rem;font-size:0.72rem;color:#374151;">
+                🔒 Secure · GDPR Compliant · 256-bit TLS Encrypted
+            </p>
+
+        </main>
+        <!-- /hero -->
+
+        <div class="footer-divider"></div>
+        <footer>© 2026 RestaurantAI &nbsp;·&nbsp; Built for the F&amp;B Industry</footer>
+
+    </div>
+    <!-- /page-wrapper -->
+
+    <script>
+        /* ── Particle Background ──────────────────────────────────── */
+        (function spawnParticles() {
+            const canvas = document.getElementById('bgCanvas');
+            const count = 20;
+            for (let i = 0; i < count; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                const size = 2 + Math.random() * 3;
+                p.style.cssText = `
+          left: ${Math.random() * 100}%;
+          top: ${Math.random() * 100}%;
+          width: ${size}px;
+          height: ${size}px;
+          animation: particle-float ${5 + Math.random() * 7}s ease-in-out infinite;
+          animation-delay: ${Math.random() * 6}s;
+          opacity: ${0.2 + Math.random() * 0.35};
+        `;
+                canvas.appendChild(p);
+            }
+        })();
+
+        /* ── Decorative rings ─────────────────────────────────────── */
+        (function spawnRings() {
+            const canvas = document.getElementById('bgCanvas');
+            const sizes = ['500px', '750px', '1050px', '1350px'];
+            sizes.forEach((s, i) => {
+                const r = document.createElement('div');
+                r.className = 'ring';
+                r.style.cssText = `
+          width: ${s}; height: ${s};
+          animation-delay: ${i * 1.2}s;
+          opacity: ${0.2 - i * 0.035};
+        `;
+                canvas.appendChild(r);
+            });
+        })();
+
+        /* ── Mobile menu toggle (stub) ────────────────────────────── */
+        function toggleMenu() {
+            // Extend: slide mobile nav in/out
+            console.log('Mobile menu toggled');
+        }
+
+        /* ── Demo modal stub ──────────────────────────────────────── */
+        function showDemo() {
+            alert('📩 Demo requests coming soon!\nContact: demo@restaurantai.com');
+        }
+
+        /* ── Card keyboard navigation ─────────────────────────────── */
+        document.querySelectorAll('.role-card').forEach(card => {
+            card.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    card.click();
+                }
+            });
+        });
+
+        /* ── Scroll-reveal (Intersection Observer) ────────────────── */
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationPlayState = 'running';
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.15
+        });
+
+        document.querySelectorAll('.role-card, .stat-pill').forEach(el => observer.observe(el));
+    </script>
+</body>
+
+</html>

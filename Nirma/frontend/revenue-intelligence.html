@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Revenue Intelligence — RestaurantAI" />
+    <title>Revenue Intelligence — RestaurantAI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.min.js"></script>
+
+    <!-- Common Stylesheet -->
+    <link rel="stylesheet" href="assets/style.css" />
+
+    <style>
+        /* ── Page-specific Revenue Intelligence styles ──────────────── */
+        .item-name {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .price-text {
+            color: #4ade80;
+            font-weight: 600;
+        }
+
+        .cost-text {
+            color: #f87171;
+            font-weight: 600;
+        }
+
+        .margin-text {
+            font-weight: 600;
+        }
+
+        .margin-positive {
+            color: #4ade80;
+        }
+
+        .margin-negative {
+            color: #f87171;
+        }
+
+        .popularity-bar {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .popularity-bar-bg {
+            flex: 1;
+            height: 6px;
+            background: rgba(255, 255, 255, .1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .popularity-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #a855f7, #3b82f6);
+            border-radius: 3px;
+        }
+
+        .popularity-score {
+            font-size: .75rem;
+            color: var(--muted);
+            min-width: 35px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 280px;
+            margin-bottom: 1rem;
+        }
+
+        /* ── Classification badges ────────────────────────────────────── */
+        .classification-badge {
+            display: inline-block;
+            font-size: .72rem;
+            font-weight: 700;
+            padding: .35rem .75rem;
+            border-radius: 6px;
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .badge-star {
+            background: rgba(34, 197, 94, .12);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, .2);
+        }
+
+        .badge-hidden-star {
+            background: rgba(168, 85, 247, .12);
+            color: #d8b4fe;
+            border: 1px solid rgba(168, 85, 247, .2);
+        }
+
+        .badge-workhorse {
+            background: rgba(59, 130, 246, .12);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, .2);
+        }
+
+        .badge-dog {
+            background: rgba(239, 68, 68, .12);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, .2);
+        }
+
+        /* ── Grid layout ────────────────────────────────────────– */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .stat-card {
+            background: rgba(168, 85, 247, .08);
+            border: 1px solid rgba(168, 85, 247, .2);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: .75rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            margin-bottom: .5rem;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .stat-subtext {
+            font-size: .7rem;
+            color: var(--muted);
+            margin-top: .25rem;
+        }
+
+        .filters-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            align-items: center;
+            animation: fadeUp .5s ease both;
+            flex-wrap: wrap;
+        }
+
+        .filter-input {
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: .6rem .85rem;
+            color: var(--text);
+            font-size: .85rem;
+            font-family: 'Inter', sans-serif;
+            transition: all .2s;
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        @media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ══════════ SIDEBAR ══════════ -->
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="Restaurant Navigation">
+
+        <div class="sidebar-header">
+            <div class="sidebar-logo-icon" aria-hidden="true">🍜</div>
+            <div class="sidebar-brand">
+                <div class="name">Spice Garden</div>
+                <div class="sub">Dashboard</div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Menu</div>
+
+            <div class="nav-item" onclick="navigate('dashboard')">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label">Dashboard</span>
+            </div>
+
+            <div class="nav-item" onclick="navigate('orders')">
+                <span class="nav-icon">📋</span>
+                <span class="nav-label">Orders</span>
+            </div>
+
+            <div class="nav-item" onclick="navigate('menu')">
+                <span class="nav-icon">🍱</span>
+                <span class="nav-label">Menu Items</span>
+            </div>
+
+            <div class="nav-item active" onclick="navigate('intelligence')">
+                <span class="nav-icon">💡</span>
+                <span class="nav-label">Intelligence</span>
+            </div>
+
+            <div class="nav-item" onclick="navigate('customers')">
+                <span class="nav-icon">👥</span>
+                <span class="nav-label">Customers</span>
+            </div>
+
+            <div class="nav-section-label">Settings</div>
+
+            <div class="nav-item" onclick="navigate('profile')">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-label">Settings</span>
+            </div>
+
+            <div class="nav-item" onclick="navigate('support')">
+                <span class="nav-icon">💬</span>
+                <span class="nav-label">Support</span>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="avatar" aria-hidden="true">👨‍🍳</div>
+            <div class="avatar-info">
+                <div class="uname">Rajesh Kumar</div>
+                <div class="urole">Owner</div>
+            </div>
+        </div>
+
+    </aside>
+
+    <!-- ══════════ MAIN WRAP ══════════ -->
+    <div class="main-wrap" id="mainWrap">
+
+        <!-- ══════════ TOP NAVBAR ══════════ -->
+        <header class="topbar" role="banner">
+            <div class="topbar-left">
+                <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">☰</button>
+                <div>
+                    <div class="page-title">Revenue Intelligence</div>
+                    <div class="page-breadcrumb">Spice Garden › Analytics › Revenue Intelligence</div>
+                </div>
+            </div>
+
+            <div class="topbar-right">
+                <div class="search-bar">
+                    <span style="color:var(--muted)">🔍</span>
+                    <input type="text" placeholder="Search items…" aria-label="Search" onkeyup="filterItems()" />
+                </div>
+                <button class="icon-btn" aria-label="Refresh" onclick="refreshPage()">🔄</button>
+                <button class="icon-btn" aria-label="Logout" onclick="logout()">🚪</button>
+                <div class="topbar-avatar" role="img" aria-label="User avatar">👨‍🍳</div>
+            </div>
+        </header>
+
+        <!-- ══════════ CONTENT ══════════ -->
+        <main class="main-content" id="mainContent" role="main">
+
+            <!-- Section header -->
+            <div class="section-header">
+                <h1 class="section-title">Revenue Intelligence</h1>
+                <span style="font-size: .85rem; color: var(--muted);" id="periodText">Last 30 days</span>
+            </div>
+
+            <!-- Stats Summary -->
+            <div class="stats-summary">
+                <div class="stat-card">
+                    <div class="stat-label">Total Items</div>
+                    <div class="stat-value" id="totalItems">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Avg Margin</div>
+                    <div class="stat-value" id="avgMargin">0%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Top Item</div>
+                    <div class="stat-value" id="topItem" style="font-size: 1rem;">—</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Revenue</div>
+                    <div class="stat-value" id="totalRevenue">₹0</div>
+                </div>
+            </div>
+
+            <!-- Charts Grid -->
+            <div class="dashboard-grid">
+                <!-- Scatter Chart -->
+                <div class="card">
+                    <div class="card-title">📊 Margin vs Popularity</div>
+                    <div class="chart-container">
+                        <canvas id="scatterChart"></canvas>
+                    </div>
+                    <div style="font-size: .75rem; color: var(--muted); text-align: center; padding: .5rem 0;">
+                        Four-box analysis: Position items by profitability and sales volume
+                    </div>
+                </div>
+
+                <!-- Top Profitable Items Chart -->
+                <div class="card">
+                    <div class="card-title">💰 Top 8 Profitable Items</div>
+                    <div class="chart-container">
+                        <canvas id="profitabilityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters-bar">
+                <input type="text" class="filter-input" placeholder="Search by item name…" id="searchInput" 
+                    style="flex: 1; min-width: 200px;" onkeyup="filterItems()" />
+                <select class="filter-input" id="classificationFilter" onchange="filterItems()">
+                    <option value="">All Classifications</option>
+                    <option value="star">⭐ Star</option>
+                    <option value="hidden-star">💎 Hidden Star</option>
+                    <option value="workhorse">💪 Workhorse</option>
+                    <option value="dog">🐶 Dog</option>
+                </select>
+            </div>
+
+            <!-- Analytics Table -->
+            <div class="card">
+                <table class="data-table" role="table" aria-label="Menu performance analytics">
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Selling Price</th>
+                            <th>Food Cost</th>
+                            <th>Contribution Margin</th>
+                            <th>Popularity Score</th>
+                            <th>Classification</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Filled by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+        </main>
+
+    </div>
+
+    <!-- ══════════ SCRIPT ══════════ -->
+    <script>
+        "use strict";
+
+        // ═══ DATA STORE ═══════════════════════════════════════════
+        const menuItems = [
+            {
+                id: 1,
+                name: 'Butter Chicken',
+                price: 350,
+                cost: 120,
+                popularity: 95,
+                orders: 285,
+                revenue: 99750
+            },
+            {
+                id: 2,
+                name: 'Tandoori Chicken',
+                price: 280,
+                cost: 85,
+                popularity: 88,
+                orders: 220,
+                revenue: 61600
+            },
+            {
+                id: 3,
+                name: 'Naan',
+                price: 80,
+                cost: 18,
+                popularity: 92,
+                orders: 412,
+                revenue: 32960
+            },
+            {
+                id: 4,
+                name: 'Biryani',
+                price: 250,
+                cost: 95,
+                popularity: 85,
+                orders: 156,
+                revenue: 39000
+            },
+            {
+                id: 5,
+                name: 'Paneer Tikka',
+                price: 220,
+                cost: 70,
+                popularity: 78,
+                orders: 98,
+                revenue: 21560
+            },
+            {
+                id: 6,
+                name: 'Garlic Naan',
+                price: 100,
+                cost: 22,
+                popularity: 88,
+                orders: 245,
+                revenue: 24500
+            },
+            {
+                id: 7,
+                name: 'Gulab Jamun',
+                price: 120,
+                cost: 35,
+                popularity: 65,
+                orders: 89,
+                revenue: 10680
+            },
+            {
+                id: 8,
+                name: 'Mango Lassi',
+                price: 90,
+                cost: 20,
+                popularity: 72,
+                orders: 156,
+                revenue: 14040
+            },
+            {
+                id: 9,
+                name: 'Samosa',
+                price: 60,
+                cost: 12,
+                popularity: 82,
+                orders: 412,
+                revenue: 24720
+            },
+            {
+                id: 10,
+                name: 'Raita',
+                price: 50,
+                cost: 10,
+                popularity: 45,
+                orders: 78,
+                revenue: 3900
+            },
+            {
+                id: 11,
+                name: 'Chicken Tikka Masala',
+                price: 320,
+                cost: 110,
+                popularity: 92,
+                orders: 201,
+                revenue: 64320
+            },
+            {
+                id: 12,
+                name: 'Vegetable Biryani',
+                price: 200,
+                cost: 75,
+                popularity: 68,
+                orders: 89,
+                revenue: 17800
+            }
+        ];
+
+        let charts = {
+            scatter: null,
+            profitability: null
+        };
+
+        // ═══ CALCULATE METRICS ═════════════════════════════════
+        function calculateMetrics() {
+            const margins = menuItems.map(item => (item.price - item.cost) / item.price * 100);
+            const avgMargin = (margins.reduce((a, b) => a + b) / margins.length).toFixed(1);
+            const topItem = menuItems.reduce((max, item) => item.revenue > max.revenue ? item : max);
+            const totalRevenue = menuItems.reduce((sum, item) => sum + item.revenue, 0);
+
+            document.getElementById('totalItems').textContent = menuItems.length;
+            document.getElementById('avgMargin').textContent = avgMargin + '%';
+            document.getElementById('topItem').textContent = topItem.name;
+            document.getElementById('totalRevenue').textContent = '₹' + totalRevenue.toLocaleString();
+        }
+
+        // ═══ CLASSIFY ITEMS ═══════════════════════════════════
+        function classifyItem(item) {
+            const margin = (item.price - item.cost) / item.price * 100;
+            const avgPopularity = menuItems.reduce((sum, i) => sum + i.popularity, 0) / menuItems.length;
+
+            if (margin >= 50 && item.popularity >= avgPopularity) return 'star';
+            if (margin >= 50 && item.popularity < avgPopularity) return 'hidden-star';
+            if (margin < 50 && item.popularity >= avgPopularity) return 'workhorse';
+            return 'dog';
+        }
+
+        // ═══ TABLE RENDERING ═══════════════════════════════════
+        function renderTable(items = menuItems) {
+            const tbody = document.getElementById('tableBody');
+
+            tbody.innerHTML = items.map(item => {
+                const margin = ((item.price - item.cost) / item.price * 100).toFixed(1);
+                const classification = classifyItem(item);
+                const badgeClass = `badge-${classification}`;
+                const classificationDisplay = {
+                    'star': '⭐ Star',
+                    'hidden-star': '💎 Hidden Star',
+                    'workhorse': '💪 Workhorse',
+                    'dog': '🐶 Dog'
+                }[classification];
+
+                return `
+                    <tr>
+                        <td><span class="item-name">${escapeHtml(item.name)}</span></td>
+                        <td><span class="price-text">₹${item.price}</span></td>
+                        <td><span class="cost-text">₹${item.cost}</span></td>
+                        <td><span class="margin-text ${margin >= 50 ? 'margin-positive' : 'margin-negative'}">${margin}%</span></td>
+                        <td>
+                            <div class="popularity-bar">
+                                <div class="popularity-bar-bg">
+                                    <div class="popularity-bar-fill" style="width: ${item.popularity}%"></div>
+                                </div>
+                                <span class="popularity-score">${item.popularity}</span>
+                            </div>
+                        </td>
+                        <td><span class="classification-badge ${badgeClass}">${classificationDisplay}</span></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ═══ FILTERING ═════════════════════════════════════════
+        function filterItems() {
+            const searchVal = document.getElementById('searchInput').value.toLowerCase();
+            const classificationVal = document.getElementById('classificationFilter').value;
+
+            const filtered = menuItems.filter(item => {
+                const matchSearch = !searchVal || item.name.toLowerCase().includes(searchVal);
+                const matchClassification = !classificationVal || classifyItem(item) === classificationVal;
+                return matchSearch && matchClassification;
+            });
+
+            renderTable(filtered);
+        }
+
+        // ═══ CHART: SCATTER (Margin vs Popularity) ═════════════
+        function buildScatterChart() {
+            const ctx = document.getElementById('scatterChart').getContext('2d');
+
+            const data = {
+                datasets: [
+                    {
+                        label: '⭐ Star',
+                        data: menuItems.filter(i => classifyItem(i) === 'star').map(i => ({
+                            x: (i.price - i.cost) / i.price * 100,
+                            y: i.popularity,
+                            name: i.name
+                        })),
+                        backgroundColor: 'rgba(34, 197, 94, 0.6)',
+                        borderColor: 'rgba(34, 197, 94, 1)',
+                        borderWidth: 2,
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    },
+                    {
+                        label: '💎 Hidden Star',
+                        data: menuItems.filter(i => classifyItem(i) === 'hidden-star').map(i => ({
+                            x: (i.price - i.cost) / i.price * 100,
+                            y: i.popularity,
+                            name: i.name
+                        })),
+                        backgroundColor: 'rgba(216, 180, 254, 0.6)',
+                        borderColor: 'rgba(216, 180, 254, 1)',
+                        borderWidth: 2,
+                        pointRadius: 6
+                    },
+                    {
+                        label: '💪 Workhorse',
+                        data: menuItems.filter(i => classifyItem(i) === 'workhorse').map(i => ({
+                            x: (i.price - i.cost) / i.price * 100,
+                            y: i.popularity,
+                            name: i.name
+                        })),
+                        backgroundColor: 'rgba(96, 165, 250, 0.6)',
+                        borderColor: 'rgba(96, 165, 250, 1)',
+                        borderWidth: 2,
+                        pointRadius: 6
+                    },
+                    {
+                        label: '🐶 Dog',
+                        data: menuItems.filter(i => classifyItem(i) === 'dog').map(i => ({
+                            x: (i.price - i.cost) / i.price * 100,
+                            y: i.popularity,
+                            name: i.name
+                        })),
+                        backgroundColor: 'rgba(248, 113, 113, 0.6)',
+                        borderColor: 'rgba(248, 113, 113, 1)',
+                        borderWidth: 2,
+                        pointRadius: 6
+                    }
+                ]
+            };
+
+            if (charts.scatter) charts.scatter.destroy();
+
+            charts.scatter = new Chart(ctx, {
+                type: 'scatter',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#f1f5f9',
+                                usePointStyle: true,
+                                padding: 15
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#94a3b8',
+                            padding: 10,
+                            titleFont: { size: 12, weight: '600' },
+                            bodyFont: { size: 11 },
+                            callbacks: {
+                                label: function(context) {
+                                    return context.raw.name;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Contribution Margin (%)',
+                                color: '#94a3b8',
+                                font: { size: 11, weight: '600' }
+                            },
+                            min: 0,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)',
+                                drawBorder: false
+                            },
+                            ticks: { color: '#94a3b8', font: { size: 10 } }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Popularity Score',
+                                color: '#94a3b8',
+                                font: { size: 11, weight: '600' }
+                            },
+                            min: 0,
+                            max: 100,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)',
+                                drawBorder: false
+                            },
+                            ticks: { color: '#94a3b8', font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ═══ CHART: TOP PROFITABLE ITEMS ═══════════════════════
+        function buildProfitabilityChart() {
+            const ctx = document.getElementById('profitabilityChart').getContext('2d');
+
+            const topItems = menuItems
+                .sort((a, b) => ((b.price - b.cost) * b.orders) - ((a.price - a.cost) * a.orders))
+                .slice(0, 8);
+
+            const data = {
+                labels: topItems.map(i => i.name),
+                datasets: [{
+                    label: 'Profit Contribution (₹)',
+                    data: topItems.map(i => (i.price - i.cost) * i.orders),
+                    backgroundColor: [
+                        'rgba(34, 197, 94, 0.7)',
+                        'rgba(34, 197, 94, 0.65)',
+                        'rgba(59, 130, 246, 0.7)',
+                        'rgba(59, 130, 246, 0.65)',
+                        'rgba(168, 85, 247, 0.7)',
+                        'rgba(168, 85, 247, 0.65)',
+                        'rgba(249, 115, 22, 0.7)',
+                        'rgba(249, 115, 22, 0.65)'
+                    ],
+                    borderRadius: 6,
+                    borderSkipped: false
+                }]
+            };
+
+            if (charts.profitability) charts.profitability.destroy();
+
+            charts.profitability = new Chart(ctx, {
+                type: 'bar',
+                data: data,
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#94a3b8',
+                            padding: 10,
+                            callbacks: {
+                                label: function(context) {
+                                    return '₹' + context.parsed.x.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)',
+                                drawBorder: false
+                            },
+                            ticks: { 
+                                color: '#94a3b8',
+                                font: { size: 10 },
+                                callback: function(value) {
+                                    return '₹' + (value / 1000).toFixed(0) + 'k';
+                                }
+                            }
+                        },
+                        y: {
+                            grid: { drawBorder: false },
+                            ticks: { color: '#94a3b8', font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ═══ UI CONTROL ════════════════════════════════════════
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+        }
+
+        function navigate(page) {
+            if (page === 'dashboard') {
+                window.location.href = 'restaurant-dashboard.html';
+            }
+            if (page === 'menu') {
+                window.location.href = 'restaurant-menu.html';
+            }
+            if (page === 'orders') {
+                window.location.href = 'restaurant-orders.html';
+            }
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+
+        function logout() {
+            if (confirm('Log out?')) {
+                window.location.href = 'restaurant-login.html';
+            }
+        }
+
+        function refreshPage() {
+            const btn = event.currentTarget;
+            btn.style.animation = 'spin .7s linear infinite';
+            btn.disabled = true;
+            setTimeout(() => {
+                btn.style.animation = '';
+                btn.disabled = false;
+                buildScatterChart();
+                buildProfitabilityChart();
+            }, 800);
+        }
+
+        // ═══ UTILITIES ═════════════════════════════════════════
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ═══ INIT ══════════════════════════════════════════════
+        document.addEventListener('DOMContentLoaded', () => {
+            calculateMetrics();
+            renderTable();
+            buildScatterChart();
+            buildProfitabilityChart();
+
+            // Close on Escape
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    // Handle modal closes if needed
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>

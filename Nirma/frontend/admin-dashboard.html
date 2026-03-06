@@ -1,0 +1,1837 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Admin Dashboard — RestaurantAI Management System" />
+    <title>Admin Dashboard — RestaurantAI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet" />
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <!-- Socket.io client -->
+    <script src="/socket.io/socket.io.js"></script>
+
+    <style>
+        /* ── Reset ─────────────────────────────────────────────────── */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ── Variables ─────────────────────────────────────────────── */
+        :root {
+            --sidebar-w: 250px;
+            --sidebar-w-col: 70px;
+            --topbar-h: 64px;
+
+            --bg: #0a0a0f;
+            --bg-card: rgba(255, 255, 255, 0.04);
+            --bg-card-h: rgba(255, 255, 255, 0.07);
+            --sidebar-bg: #0d0d18;
+            --topbar-bg: rgba(13, 13, 24, 0.85);
+            --border: rgba(255, 255, 255, 0.07);
+
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --accent: #a855f7;
+            --accent-dark: #7c3aed;
+            --accent-glow: rgba(168, 85, 247, 0.25);
+            --orange: #f97316;
+            --green: #22c55e;
+            --red: #ef4444;
+            --blue: #3b82f6;
+
+            --radius: 14px;
+            --radius-lg: 20px;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+        }
+
+        /* ── Base ──────────────────────────────────────────────────── */
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(168, 85, 247, .4);
+            border-radius: 3px;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        button {
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+        }
+
+        /* ── Keyframes ─────────────────────────────────────────────── */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(18px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        @keyframes countUp {
+            from {
+                opacity: 0;
+                transform: scale(.85)
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1)
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -200% center
+            }
+
+            100% {
+                background-position: 200% center
+            }
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .45
+            }
+        }
+
+        /* ══════════════════════════════════════════
+       SIDEBAR
+    ══════════════════════════════════════════ */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: var(--sidebar-w);
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 200;
+            transition: width .3s cubic-bezier(.4, 0, .2, 1);
+            overflow: hidden;
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-w-col);
+        }
+
+        /* Sidebar header */
+        .sidebar-header {
+            height: var(--topbar-h);
+            display: flex;
+            align-items: center;
+            padding: 0 1.1rem;
+            gap: .75rem;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .sidebar-logo-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            box-shadow: 0 0 14px var(--accent-glow);
+        }
+
+        .sidebar-brand {
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .sidebar-brand .name {
+            font-size: .95rem;
+            font-weight: 700;
+            color: #fff;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .sidebar-brand .sub {
+            font-size: .6rem;
+            color: var(--accent);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .1em;
+        }
+
+        /* Nav sections */
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: .75rem 0;
+        }
+
+        .nav-section-label {
+            font-size: .58rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .12em;
+            color: #374151;
+            padding: .75rem 1.1rem .3rem;
+            white-space: nowrap;
+            transition: opacity .25s;
+        }
+
+        .sidebar.collapsed .nav-section-label {
+            opacity: 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: .8rem;
+            padding: .65rem 1.1rem;
+            margin: 1px .5rem;
+            border-radius: 10px;
+            color: var(--muted);
+            font-size: .83rem;
+            font-weight: 500;
+            white-space: nowrap;
+            transition: all .2s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, .05);
+            color: var(--text);
+        }
+
+        .nav-item.active {
+            background: rgba(168, 85, 247, .14);
+            color: var(--accent);
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 20%;
+            bottom: 20%;
+            width: 3px;
+            border-radius: 0 3px 3px 0;
+            background: var(--accent);
+            margin-left: -.5rem;
+        }
+
+        .nav-icon {
+            font-size: 1.05rem;
+            flex-shrink: 0;
+            width: 20px;
+            text-align: center;
+        }
+
+        .nav-label {
+            transition: opacity .25s;
+        }
+
+        .sidebar.collapsed .nav-label {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Badge */
+        .nav-badge {
+            margin-left: auto;
+            background: var(--accent);
+            color: #fff;
+            font-size: .6rem;
+            font-weight: 700;
+            padding: .15rem .45rem;
+            border-radius: 99px;
+            white-space: nowrap;
+            transition: opacity .25s;
+        }
+
+        .sidebar.collapsed .nav-badge {
+            opacity: 0;
+        }
+
+        /* Sidebar footer */
+        .sidebar-footer {
+            border-top: 1px solid var(--border);
+            padding: .85rem 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            flex-shrink: 0;
+        }
+
+        .avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .9rem;
+            flex-shrink: 0;
+        }
+
+        .avatar-info .uname {
+            font-size: .8rem;
+            font-weight: 600;
+            color: var(--text);
+            white-space: nowrap;
+        }
+
+        .avatar-info .urole {
+            font-size: .65rem;
+            color: var(--accent);
+            white-space: nowrap;
+        }
+
+        .avatar-info {
+            transition: opacity .25s;
+        }
+
+        .sidebar.collapsed .avatar-info {
+            opacity: 0;
+        }
+
+        /* ══════════════════════════════════════════
+       TOP NAVBAR
+    ══════════════════════════════════════════ */
+        .topbar {
+            position: fixed;
+            top: 0;
+            left: var(--sidebar-w);
+            right: 0;
+            height: var(--topbar-h);
+            background: var(--topbar-bg);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            transition: left .3s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        .sidebar.collapsed~.main-wrap .topbar {
+            left: var(--sidebar-w-col);
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* Hamburger / toggle */
+        .menu-toggle {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: var(--muted);
+            transition: all .2s;
+        }
+
+        .menu-toggle:hover {
+            background: rgba(255, 255, 255, .1);
+            color: var(--text);
+        }
+
+        .page-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .page-breadcrumb {
+            font-size: .72rem;
+            color: var(--muted);
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+        }
+
+        /* Search bar */
+        .search-bar {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: .42rem .85rem;
+            font-size: .82rem;
+            color: var(--muted);
+            transition: all .25s;
+            cursor: text;
+        }
+
+        .search-bar input {
+            background: none;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-size: .82rem;
+            font-family: 'Inter', sans-serif;
+            width: 160px;
+        }
+
+        .search-bar input::placeholder {
+            color: var(--muted);
+        }
+
+        .search-bar:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        /* Icon buttons */
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            font-size: .95rem;
+            transition: all .2s;
+            position: relative;
+        }
+
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, .1);
+            color: var(--text);
+        }
+
+        /* Notification dot */
+        .notif-dot {
+            position: absolute;
+            top: 6px;
+            right: 7px;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #ef4444;
+            border: 1px solid var(--topbar-bg);
+            animation: pulse 2s infinite;
+        }
+
+        /* Topbar avatar */
+        .topbar-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .85rem;
+            cursor: pointer;
+            border: 2px solid rgba(168, 85, 247, .3);
+            transition: border-color .2s;
+        }
+
+        .topbar-avatar:hover {
+            border-color: var(--accent);
+        }
+
+        /* ══════════════════════════════════════════
+       MAIN AREA
+    ══════════════════════════════════════════ */
+        .main-wrap {
+            margin-left: var(--sidebar-w);
+            transition: margin-left .3s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        .sidebar.collapsed~.main-wrap {
+            margin-left: var(--sidebar-w-col);
+        }
+
+        .main-content {
+            padding: calc(var(--topbar-h) + 1.75rem) 1.75rem 2rem;
+            min-height: 100vh;
+        }
+
+        /* ── Section header ────────────────────────────────────────── */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+            animation: fadeUp .5s ease both;
+        }
+
+        .section-title {
+            font-size: .75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .1em;
+            color: var(--muted);
+        }
+
+        .section-action {
+            font-size: .75rem;
+            color: var(--accent);
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity .2s;
+        }
+
+        .section-action:hover {
+            opacity: .75;
+        }
+
+        /* ── Greet banner ──────────────────────────────────────────── */
+        .greet-banner {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.12) 0%, rgba(124, 58, 237, 0.08) 100%);
+            border: 1px solid rgba(168, 85, 247, 0.2);
+            border-radius: var(--radius-lg);
+            padding: 1.4rem 1.75rem;
+            margin-bottom: 1.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            animation: fadeUp .5s ease both;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .greet-banner::after {
+            content: '🛡️';
+            position: absolute;
+            right: 1.75rem;
+            font-size: 4rem;
+            opacity: .1;
+        }
+
+        .greet-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: .2rem;
+        }
+
+        .greet-sub {
+            font-size: .8rem;
+            color: var(--muted);
+        }
+
+        .greet-time {
+            font-size: .75rem;
+            color: var(--accent);
+            font-weight: 600;
+            background: rgba(168, 85, 247, .12);
+            border: 1px solid rgba(168, 85, 247, .2);
+            padding: .35rem .8rem;
+            border-radius: 8px;
+            white-space: nowrap;
+        }
+
+        /* ── KPI Cards Grid ────────────────────────────────────────── */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.1rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.35rem 1.4rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform .25s, box-shadow .25s, background .25s, border-color .25s;
+            cursor: default;
+            animation: fadeUp .5s ease both;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            background: var(--bg-card-h);
+        }
+
+        /* Glowing top bar per card */
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+        }
+
+        .kpi-card.kpi-purple::before {
+            background: linear-gradient(90deg, var(--accent-dark), var(--accent));
+        }
+
+        .kpi-card.kpi-orange::before {
+            background: linear-gradient(90deg, #dc2626, var(--orange));
+        }
+
+        .kpi-card.kpi-green::before {
+            background: linear-gradient(90deg, #16a34a, var(--green));
+        }
+
+        .kpi-card.kpi-blue::before {
+            background: linear-gradient(90deg, #1d4ed8, var(--blue));
+        }
+
+        .kpi-card:hover.kpi-purple {
+            border-color: rgba(168, 85, 247, .35);
+            box-shadow: 0 12px 40px rgba(168, 85, 247, .12);
+        }
+
+        .kpi-card:hover.kpi-orange {
+            border-color: rgba(249, 115, 22, .35);
+            box-shadow: 0 12px 40px rgba(249, 115, 22, .12);
+        }
+
+        .kpi-card:hover.kpi-green {
+            border-color: rgba(34, 197, 94, .35);
+            box-shadow: 0 12px 40px rgba(34, 197, 94, .12);
+        }
+
+        .kpi-card:hover.kpi-blue {
+            border-color: rgba(59, 130, 246, .35);
+            box-shadow: 0 12px 40px rgba(59, 130, 246, .12);
+        }
+
+        .kpi-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .kpi-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .kpi-purple .kpi-icon {
+            background: rgba(168, 85, 247, .15);
+            border: 1px solid rgba(168, 85, 247, .25);
+        }
+
+        .kpi-orange .kpi-icon {
+            background: rgba(249, 115, 22, .15);
+            border: 1px solid rgba(249, 115, 22, .25);
+        }
+
+        .kpi-green .kpi-icon {
+            background: rgba(34, 197, 94, .15);
+            border: 1px solid rgba(34, 197, 94, .25);
+        }
+
+        .kpi-blue .kpi-icon {
+            background: rgba(59, 130, 246, .15);
+            border: 1px solid rgba(59, 130, 246, .25);
+        }
+
+        .kpi-badge {
+            font-size: .65rem;
+            font-weight: 700;
+            padding: .2rem .5rem;
+            border-radius: 7px;
+        }
+
+        .badge-up {
+            background: rgba(34, 197, 94, .12);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, .2);
+        }
+
+        .badge-down {
+            background: rgba(239, 68, 68, .12);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, .2);
+        }
+
+        .kpi-value {
+            font-size: 1.9rem;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -.02em;
+            line-height: 1;
+            margin-bottom: .3rem;
+            animation: countUp .6s ease both;
+        }
+
+        .kpi-label {
+            font-size: .78rem;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        .kpi-subtext {
+            font-size: .68rem;
+            color: #374151;
+            margin-top: .4rem;
+        }
+
+        /* Progress bar inside KPI */
+        .kpi-progress {
+            height: 3px;
+            background: rgba(255, 255, 255, .07);
+            border-radius: 99px;
+            margin-top: .85rem;
+            overflow: hidden;
+        }
+
+        .kpi-progress-bar {
+            height: 100%;
+            border-radius: 99px;
+            transition: width 1.5s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        .kpi-purple .kpi-progress-bar {
+            background: linear-gradient(90deg, var(--accent-dark), var(--accent));
+        }
+
+        .kpi-orange .kpi-progress-bar {
+            background: linear-gradient(90deg, #dc2626, var(--orange));
+        }
+
+        .kpi-green .kpi-progress-bar {
+            background: linear-gradient(90deg, #16a34a, var(--green));
+        }
+
+        .kpi-blue .kpi-progress-bar {
+            background: linear-gradient(90deg, #1d4ed8, var(--blue));
+        }
+
+        /* ── Charts Section ────────────────────────────────────────── */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.1rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .chart-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            animation: fadeUp .5s .1s ease both;
+        }
+
+        .chart-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+        }
+
+        .chart-title-group .ctitle {
+            font-size: .9rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .chart-title-group .csub {
+            font-size: .72rem;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        /* Period tabs */
+        .period-tabs {
+            display: flex;
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            padding: 2px;
+        }
+
+        .ptab {
+            padding: .3rem .7rem;
+            font-size: .72rem;
+            font-weight: 600;
+            border-radius: 7px;
+            background: transparent;
+            border: none;
+            color: var(--muted);
+            transition: all .2s;
+        }
+
+        .ptab.active {
+            background: rgba(168, 85, 247, .18);
+            color: var(--accent);
+        }
+
+        /* Canvas wrapper */
+        .chart-wrap {
+            position: relative;
+            height: 250px;
+        }
+
+        /* Donut chart wrapper */
+        .donut-wrap {
+            position: relative;
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Legend */
+        .chart-legend {
+            display: flex;
+            flex-direction: column;
+            gap: .55rem;
+            margin-top: 1rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: .75rem;
+        }
+
+        .legend-dot-label {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            color: var(--muted);
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .legend-val {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        /* ── Bottom Row ────────────────────────────────────────────── */
+        .bottom-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.1rem;
+        }
+
+        .table-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            animation: fadeUp .5s .2s ease both;
+        }
+
+        /* ── Table ─────────────────────────────────────────────────── */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .78rem;
+        }
+
+        .data-table thead tr {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table th {
+            font-size: .65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: #374151;
+            padding: .5rem .75rem;
+            text-align: left;
+        }
+
+        .data-table td {
+            padding: .7rem .75rem;
+            color: var(--muted);
+            vertical-align: middle;
+            border-bottom: 1px solid rgba(255, 255, 255, .03);
+        }
+
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .data-table tbody tr:hover td {
+            background: rgba(255, 255, 255, .02);
+            color: var(--text);
+        }
+
+        /* Status pill */
+        .pill {
+            display: inline-block;
+            font-size: .62rem;
+            font-weight: 700;
+            padding: .18rem .55rem;
+            border-radius: 6px;
+        }
+
+        .pill-green {
+            background: rgba(34, 197, 94, .12);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, .2);
+        }
+
+        .pill-yellow {
+            background: rgba(234, 179, 8, .12);
+            color: #fbbf24;
+            border: 1px solid rgba(234, 179, 8, .2);
+        }
+
+        .pill-red {
+            background: rgba(239, 68, 68, .12);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, .2);
+        }
+
+        .pill-blue {
+            background: rgba(59, 130, 246, .12);
+            color: #93c5fd;
+            border: 1px solid rgba(59, 130, 246, .2);
+        }
+
+        /* ── Activity feed ─────────────────────────────────────────── */
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+            gap: .75rem;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: flex-start;
+            gap: .85rem;
+            padding-bottom: .75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, .04);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .act-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .95rem;
+            flex-shrink: 0;
+        }
+
+        .act-body {
+            flex: 1;
+        }
+
+        .act-title {
+            font-size: .78rem;
+            color: var(--text);
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        .act-time {
+            font-size: .67rem;
+            color: #374151;
+            margin-top: 2px;
+        }
+
+        /* ── Responsive ────────────────────────────────────────────── */
+        @media (max-width: 1200px) {
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .bottom-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 900px) {
+            :root {
+                --sidebar-w: 70px;
+            }
+
+            .sidebar-brand,
+            .nav-label,
+            .nav-badge,
+            .avatar-info,
+            .nav-section-label {
+                opacity: 0;
+                pointer-events: none;
+            }
+
+            .greet-banner {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: .75rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .main-content {
+                padding: calc(var(--topbar-h) + 1rem) 1rem 1.5rem;
+            }
+
+            .search-bar {
+                display: none;
+            }
+
+            .greet-time {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ══════════ SIDEBAR ══════════ -->
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="Admin Navigation">
+
+        <div class="sidebar-header">
+            <div class="sidebar-logo-icon" aria-hidden="true">🍜</div>
+            <div class="sidebar-brand">
+                <div class="name">RestaurantAI</div>
+                <div class="sub">Admin Console</div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Main</div>
+
+            <div class="nav-item active" onclick="navigate('dashboard')">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label">Dashboard</span>
+            </div>
+
+            <div class="nav-item" onclick="navigate('restaurants')">
+                <span class="nav-icon">🏪</span>
+                <span class="nav-label">Restaurants</span>
+                <span class="nav-badge">12</span>
+            </div>
+
+            <div class="nav-item" onclick="navigate('orders')">
+                <span class="nav-icon">📋</span>
+                <span class="nav-label">Orders</span>
+                <span class="nav-badge">3</span>
+            </div>
+
+            <div class="nav-item" onclick="navigate('revenue')">
+                <span class="nav-icon">💰</span>
+                <span class="nav-label">Revenue</span>
+            </div>
+
+            <div class="nav-section-label">AI Tools</div>
+
+            <div class="nav-item" onclick="navigate('insights')">
+                <span class="nav-icon">🤖</span>
+                <span class="nav-label">AI Insights</span>
+            </div>
+
+            <div class="nav-item" onclick="navigate('voice')">
+                <span class="nav-icon">🎙️</span>
+                <span class="nav-label">Voice Orders</span>
+            </div>
+
+            <div class="nav-item" onclick="navigate('combos')">
+                <span class="nav-icon">🍱</span>
+                <span class="nav-label">Combo Rules</span>
+            </div>
+
+            <div class="nav-section-label">System</div>
+
+            <div class="nav-item" onclick="navigate('users')">
+                <span class="nav-icon">👥</span>
+                <span class="nav-label">Users</span>
+            </div>
+
+            <div class="nav-item" onclick="navigate('settings')">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-label">Settings</span>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="avatar" aria-hidden="true">👤</div>
+            <div class="avatar-info">
+                <div class="uname">Super Admin</div>
+                <div class="urole">admin@demo.com</div>
+            </div>
+        </div>
+
+    </aside>
+
+    <!-- ══════════ MAIN WRAP ══════════ -->
+    <div class="main-wrap" id="mainWrap">
+
+        <!-- ══════════ TOP NAVBAR ══════════ -->
+        <header class="topbar" role="banner">
+            <div class="topbar-left">
+                <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">☰</button>
+                <div>
+                    <div class="page-title">Dashboard</div>
+                    <div class="page-breadcrumb">Admin Console &rsaquo; Overview</div>
+                </div>
+            </div>
+
+            <div class="topbar-right">
+                <!-- Search -->
+                <div class="search-bar">
+                    <span style="color:var(--muted)">🔍</span>
+                    <input type="text" placeholder="Search restaurants, orders…" aria-label="Search" />
+                </div>
+
+                <!-- Notifications -->
+                <button class="icon-btn" aria-label="Notifications" onclick="alert('3 new alerts')">
+                    🔔
+                    <span class="notif-dot" aria-hidden="true"></span>
+                </button>
+
+                <!-- Refresh -->
+                <button class="icon-btn" id="refreshBtn" aria-label="Refresh data" onclick="refreshData()">🔄</button>
+
+                <!-- Logout -->
+                <button class="icon-btn" aria-label="Logout" onclick="logout()">🚪</button>
+
+                <!-- Avatar -->
+                <div class="topbar-avatar" role="img" aria-label="Admin user">👤</div>
+            </div>
+        </header>
+
+        <!-- ══════════ DASHBOARD CONTENT ══════════ -->
+        <main class="main-content" id="mainContent" role="main">
+
+            <!-- Greeting banner -->
+            <div class="greet-banner">
+                <div>
+                    <div class="greet-title" id="greetTitle">Good Evening, Super Admin 👋</div>
+                    <div class="greet-sub">Here's what's happening across all restaurants today.</div>
+                </div>
+                <div class="greet-time" id="greetClock">7:30 PM · Thu, 5 Mar</div>
+            </div>
+
+            <!-- ── KPI Cards ──────────────────────────────────────────── -->
+            <div class="section-header">
+                <span class="section-title">Key Performance Indicators</span>
+                <span class="section-action" onclick="alert('Exporting report…')">Export Report ↗</span>
+            </div>
+
+            <div class="kpi-grid">
+                <!-- Total Restaurants -->
+                <div class="kpi-card kpi-purple" style="animation-delay:.05s">
+                    <div class="kpi-top">
+                        <div class="kpi-icon" aria-hidden="true">🏪</div>
+                        <span class="kpi-badge badge-up">▲ 8.2%</span>
+                    </div>
+                    <div class="kpi-value" id="kpi-restaurants">0</div>
+                    <div class="kpi-label">Total Restaurants</div>
+                    <div class="kpi-subtext">4 added this month</div>
+                    <div class="kpi-progress">
+                        <div class="kpi-progress-bar" id="pb-restaurants" style="width:0"></div>
+                    </div>
+                </div>
+
+                <!-- Orders Today -->
+                <div class="kpi-card kpi-orange" style="animation-delay:.10s">
+                    <div class="kpi-top">
+                        <div class="kpi-icon" aria-hidden="true">📋</div>
+                        <span class="kpi-badge badge-up">▲ 14.5%</span>
+                    </div>
+                    <div class="kpi-value" id="kpi-orders">0</div>
+                    <div class="kpi-label">Total Orders Today</div>
+                    <div class="kpi-subtext">Across all restaurants</div>
+                    <div class="kpi-progress">
+                        <div class="kpi-progress-bar" id="pb-orders" style="width:0"></div>
+                    </div>
+                </div>
+
+                <!-- Revenue -->
+                <div class="kpi-card kpi-green" style="animation-delay:.15s">
+                    <div class="kpi-top">
+                        <div class="kpi-icon" aria-hidden="true">💰</div>
+                        <span class="kpi-badge badge-up">▲ 22.1%</span>
+                    </div>
+                    <div class="kpi-value" id="kpi-revenue">₹0</div>
+                    <div class="kpi-label">Today's Revenue</div>
+                    <div class="kpi-subtext">vs ₹3.1L yesterday</div>
+                    <div class="kpi-progress">
+                        <div class="kpi-progress-bar" id="pb-revenue" style="width:0"></div>
+                    </div>
+                </div>
+
+                <!-- Active Users -->
+                <div class="kpi-card kpi-blue" style="animation-delay:.20s">
+                    <div class="kpi-top">
+                        <div class="kpi-icon" aria-hidden="true">👥</div>
+                        <span class="kpi-badge badge-down">▼ 3.4%</span>
+                    </div>
+                    <div class="kpi-value" id="kpi-users">0</div>
+                    <div class="kpi-label">Active Users</div>
+                    <div class="kpi-subtext">Right now on platform</div>
+                    <div class="kpi-progress">
+                        <div class="kpi-progress-bar" id="pb-users" style="width:0"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Charts ─────────────────────────────────────────────── -->
+            <div class="section-header">
+                <span class="section-title">Analytics</span>
+            </div>
+
+            <div class="charts-grid">
+
+                <!-- Revenue Chart (line) -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title-group">
+                            <div class="ctitle">Revenue Overview</div>
+                            <div class="csub">Daily revenue across all restaurants</div>
+                        </div>
+                        <div class="period-tabs">
+                            <button class="ptab active" onclick="switchPeriod(this,'7d')">7D</button>
+                            <button class="ptab" onclick="switchPeriod(this,'30d')">30D</button>
+                            <button class="ptab" onclick="switchPeriod(this,'90d')">90D</button>
+                        </div>
+                    </div>
+                    <div class="chart-wrap">
+                        <canvas id="revenueChart" aria-label="Revenue overview chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Order stats (donut) -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title-group">
+                            <div class="ctitle">Order Types</div>
+                            <div class="csub">Distribution today</div>
+                        </div>
+                    </div>
+                    <div class="donut-wrap">
+                        <canvas id="ordersChart" aria-label="Order types chart"></canvas>
+                    </div>
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <div class="legend-dot-label">
+                                <div class="legend-dot" style="background:#f97316"></div>Dine-In
+                            </div>
+                            <div class="legend-val">42%</div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot-label">
+                                <div class="legend-dot" style="background:#a855f7"></div>Delivery
+                            </div>
+                            <div class="legend-val">35%</div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot-label">
+                                <div class="legend-dot" style="background:#14b8a6"></div>Takeaway
+                            </div>
+                            <div class="legend-val">23%</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /charts-grid -->
+
+            <!-- ── Order Stats Bar Chart ──────────────────────────────── -->
+            <div class="chart-card" style="margin-bottom:1.75rem;animation-delay:.15s">
+                <div class="chart-header">
+                    <div class="chart-title-group">
+                        <div class="ctitle">Order Statistics — Hourly</div>
+                        <div class="csub">Orders per hour across all restaurants today</div>
+                    </div>
+                </div>
+                <div class="chart-wrap" style="height:200px">
+                    <canvas id="ordersBarChart" aria-label="Hourly order statistics chart"></canvas>
+                </div>
+            </div>
+
+            <!-- ── Bottom Row ─────────────────────────────────────────── -->
+            <div class="section-header">
+                <span class="section-title">Recent Activity</span>
+            </div>
+
+            <div class="bottom-grid">
+
+                <!-- Recent orders table -->
+                <div class="table-card">
+                    <div class="chart-header" style="margin-bottom:1rem">
+                        <div class="chart-title-group">
+                            <div class="ctitle">Recent Orders</div>
+                            <div class="csub">Latest transactions platform-wide</div>
+                        </div>
+                        <span class="section-action" onclick="alert('Loading full order list…')">View all</span>
+                    </div>
+                    <table class="data-table" role="table" aria-label="Recent orders">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Restaurant</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTable">
+                            <!-- filled by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Activity feed -->
+                <div class="table-card">
+                    <div class="chart-header" style="margin-bottom:1rem">
+                        <div class="chart-title-group">
+                            <div class="ctitle">System Activity</div>
+                            <div class="csub">Recent platform events</div>
+                        </div>
+                    </div>
+                    <div class="activity-list" id="activityFeed">
+                        <!-- filled by JS -->
+                    </div>
+                </div>
+
+            </div><!-- /bottom-grid -->
+
+        </main><!-- /main-content -->
+    </div><!-- /main-wrap -->
+
+    <!-- ───────────────────── SCRIPT ───────────────────────────── -->
+    <script>
+        "use strict";
+
+        /* ══ SIDEBAR TOGGLE ══════════════════════════════════════════ */
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+        }
+
+        /* ══ NAV ══════════════════════════════════════════════════════ */
+        function navigate(page) {
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            document.querySelector('.page-title').textContent =
+                page.charAt(0).toUpperCase() + page.slice(1);
+            document.querySelector('.page-breadcrumb').textContent = `Admin Console › ${page.charAt(0).toUpperCase() + page.slice(1)}`;
+        }
+
+        /* ══ CLOCK ═══════════════════════════════════════════════════ */
+        function updateClock() {
+            const now = new Date();
+            const h = now.getHours();
+            const greet = h < 12 ? 'Good Morning' : h < 17 ? 'Good Afternoon' : 'Good Evening';
+            document.getElementById('greetTitle').textContent = `${greet}, Super Admin 👋`;
+
+            const opts = { weekday: 'short', day: 'numeric', month: 'short' };
+            const date = now.toLocaleDateString('en-IN', opts);
+            const time = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+            document.getElementById('greetClock').textContent = `${time} · ${date}`;
+        }
+        updateClock();
+        setInterval(updateClock, 30000);
+
+        /* ══ KPI COUNTER ANIMATION ═══════════════════════════════════ */
+        function animateCount(elemId, target, prefix = '', suffix = '', duration = 1500) {
+            const el = document.getElementById(elemId);
+            const start = performance.now();
+            function tick(now) {
+                const progress = Math.min((now - start) / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                const value = Math.floor(eased * target);
+                el.textContent = prefix + value.toLocaleString('en-IN') + suffix;
+                if (progress < 1) requestAnimationFrame(tick);
+                else el.textContent = prefix + target.toLocaleString('en-IN') + suffix;
+            }
+            requestAnimationFrame(tick);
+        }
+
+        function animateProgressBar(id, pct, delay = 300) {
+            setTimeout(() => {
+                document.getElementById(id).style.width = pct + '%';
+            }, delay);
+        }
+
+        function loadKPIs() {
+            animateCount('kpi-restaurants', 142, '', '', 1200);
+            animateCount('kpi-orders', 3847, '', '', 1400);
+            animateCount('kpi-revenue', 0, '₹', '', 1600);  // special: money
+            animateCount('kpi-users', 2341, '', '', 1300);
+
+            // Revenue: animate ₹3.8L
+            const revEl = document.getElementById('kpi-revenue');
+            const start = performance.now();
+            const revTarget = 380000;
+            function tickRev(now) {
+                const progress = Math.min((now - start) / 1600, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                const val = Math.floor(eased * revTarget);
+                revEl.textContent = '₹' + (val >= 100000 ? (val / 100000).toFixed(1) + 'L' : val.toLocaleString('en-IN'));
+                if (progress < 1) requestAnimationFrame(tickRev);
+                else revEl.textContent = '₹3.8L';
+            }
+            requestAnimationFrame(tickRev);
+
+            // Progress bars
+            animateProgressBar('pb-restaurants', 71, 400);
+            animateProgressBar('pb-orders', 88, 500);
+            animateProgressBar('pb-revenue', 92, 600);
+            animateProgressBar('pb-users', 58, 700);
+        }
+
+        /* ══ CHART HELPERS ═══════════════════════════════════════════ */
+        const chartDefaults = {
+            color: '#94a3b8',
+            font: { family: 'Inter', size: 11 }
+        };
+
+        Chart.defaults.color = chartDefaults.color;
+        Chart.defaults.font = chartDefaults.font;
+
+        /* ── Revenue Chart (line) ─────────────────────────────────── */
+        let revenueChart;
+
+        const revenueData = {
+            '7d': {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                data: [2.1, 2.8, 2.4, 3.1, 3.8, 4.2, 3.5]
+            },
+            '30d': {
+                labels: Array.from({ length: 30 }, (_, i) => `${i + 1}`),
+                data: Array.from({ length: 30 }, () => +(1.5 + Math.random() * 3).toFixed(2))
+            },
+            '90d': {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
+                data: [18.2, 22.5, 19.8, 24.1, 28.3, 25.7, 30.2, 27.4, 32.1]
+            }
+        };
+
+        function buildRevenueChart(period = '7d') {
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            const d = revenueData[period];
+
+            const gradient = ctx.createLinearGradient(0, 0, 0, 250);
+            gradient.addColorStop(0, 'rgba(168,85,247,0.30)');
+            gradient.addColorStop(1, 'rgba(168,85,247,0.00)');
+
+            if (revenueChart) revenueChart.destroy();
+
+            revenueChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: d.labels,
+                    datasets: [{
+                        label: 'Revenue (₹L)',
+                        data: d.data,
+                        borderColor: '#a855f7',
+                        backgroundColor: gradient,
+                        borderWidth: 2.5,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#a855f7',
+                        pointBorderColor: '#0d0d18',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1e1b2e',
+                            borderColor: 'rgba(168,85,247,.35)',
+                            borderWidth: 1,
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#94a3b8',
+                            callbacks: {
+                                label: ctx => ` ₹${ctx.parsed.y}L`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255,255,255,.05)' },
+                            ticks: { color: '#475569' }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255,255,255,.05)' },
+                            ticks: { color: '#475569', callback: v => '₹' + v + 'L' },
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function switchPeriod(btn, period) {
+            document.querySelectorAll('.ptab').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            buildRevenueChart(period);
+        }
+
+        /* ── Orders Donut Chart ───────────────────────────────────── */
+        function buildOrdersDonut() {
+            const ctx = document.getElementById('ordersChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Dine-In', 'Delivery', 'Takeaway'],
+                    datasets: [{
+                        data: [42, 35, 23],
+                        backgroundColor: ['#f97316', '#a855f7', '#14b8a6'],
+                        borderColor: '#0d0d18',
+                        borderWidth: 3,
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '68%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1e1b2e',
+                            borderColor: 'rgba(255,255,255,.1)',
+                            borderWidth: 1,
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#94a3b8',
+                            callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed}%` }
+                        }
+                    }
+                }
+            });
+        }
+
+        /* ── Hourly Orders Bar Chart ──────────────────────────────── */
+        function buildOrdersBar() {
+            const ctx = document.getElementById('ordersBarChart').getContext('2d');
+            const hours = ['8AM', '9AM', '10AM', '11AM', '12PM', '1PM', '2PM', '3PM', '4PM', '5PM', '6PM', '7PM'];
+            const vals = [45, 82, 110, 198, 312, 287, 241, 189, 156, 210, 298, 342];
+
+            const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+            gradient.addColorStop(0, 'rgba(249,115,22,0.85)');
+            gradient.addColorStop(1, 'rgba(220,38,38,0.40)');
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: hours,
+                    datasets: [{
+                        label: 'Orders',
+                        data: vals,
+                        backgroundColor: gradient,
+                        borderRadius: 6,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1e1b2e',
+                            borderColor: 'rgba(249,115,22,.35)',
+                            borderWidth: 1,
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#94a3b8',
+                            callbacks: { label: ctx => ` ${ctx.parsed.y} orders` }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#475569' }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255,255,255,.05)' },
+                            ticks: { color: '#475569' },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        /* ══ ORDERS TABLE ════════════════════════════════════════════ */
+        const ORDERS = [
+            { id: '#ORD-8821', restaurant: 'Spice Garden', amount: '₹1,240', status: 'Delivered', cls: 'pill-green' },
+            { id: '#ORD-8820', restaurant: 'The Biryani Co.', amount: '₹980', status: 'Processing', cls: 'pill-yellow' },
+            { id: '#ORD-8819', restaurant: 'Mehfil Kitchen', amount: '₹2,100', status: 'Delivered', cls: 'pill-green' },
+            { id: '#ORD-8818', restaurant: 'Urban Plates', amount: '₹560', status: 'Cancelled', cls: 'pill-red' },
+            { id: '#ORD-8817', restaurant: 'Curry House', amount: '₹1,680', status: 'On the way', cls: 'pill-blue' },
+        ];
+
+        function buildTable() {
+            const tbody = document.getElementById('ordersTable');
+            tbody.innerHTML = ORDERS.map(o => `
+        <tr>
+          <td style="color:var(--accent);font-weight:600">${o.id}</td>
+          <td>${o.restaurant}</td>
+          <td style="color:#f1f5f9;font-weight:600">${o.amount}</td>
+          <td><span class="pill ${o.cls}">${o.status}</span></td>
+        </tr>
+      `).join('');
+        }
+
+        /* ══ ACTIVITY FEED ═══════════════════════════════════════════ */
+        const ACTIVITIES = [
+            { icon: '🏪', bg: 'rgba(168,85,247,.12)', title: 'New restaurant <strong>Curry Leaf </strong> onboarded', time: '2 min ago' },
+            { icon: '⚠️', bg: 'rgba(239,68,68,.12)', title: 'Revenue drop alert at <strong>Urban Plates</strong>', time: '11 min ago' },
+            { icon: '🤖', bg: 'rgba(20,184,166,.12)', title: 'AI upsell generated ₹4,200 extra revenue', time: '18 min ago' },
+            { icon: '👤', bg: 'rgba(59,130,246,.12)', title: 'New admin user <strong>priya@admin.com</strong> added', time: '32 min ago' },
+            { icon: '📊', bg: 'rgba(249,115,22,.12)', title: 'Monthly revenue report is ready for download', time: '1 hr ago' },
+        ];
+
+        function buildActivity() {
+            const feed = document.getElementById('activityFeed');
+            feed.innerHTML = ACTIVITIES.map(a => `
+        <div class="activity-item">
+          <div class="act-icon" style="background:${a.bg}" aria-hidden="true">${a.icon}</div>
+          <div class="act-body">
+            <div class="act-title">${a.title}</div>
+            <div class="act-time">${a.time}</div>
+          </div>
+        </div>
+      `).join('');
+        }
+
+        /* ══ REFRESH ════════════════════════════════════════════════ */
+        function refreshData() {
+            const btn = document.getElementById('refreshBtn');
+            btn.style.animation = 'spin .7s linear infinite';
+            btn.disabled = true;
+            setTimeout(() => {
+                btn.style.animation = '';
+                btn.disabled = false;
+                loadKPIs();
+                buildRevenueChart('7d');
+                document.querySelectorAll('.ptab').forEach((b, i) => b.classList.toggle('active', i === 0));
+            }, 1000);
+        }
+
+        /* ══ LOGOUT ═════════════════════════════════════════════════ */
+        function logout() {
+            if (confirm('Log out of the admin console?')) {
+                window.location.href = 'admin-login.html';
+            }
+        }
+
+        /* ══ INIT ═══════════════════════════════════════════════════ */
+        document.addEventListener('DOMContentLoaded', () => {
+            loadKPIs();
+            buildRevenueChart('7d');
+            buildOrdersDonut();
+            buildOrdersBar();
+            buildTable();
+            buildActivity();
+            initSocket();
+        });
+
+        /* ══ LIVE COUNT STATE ════════════════════════════════════════ */
+        let liveAdminOrders = 1284;
+        let liveAdminRevenue = 3820000;
+
+        /* ══ SOCKET.IO — REAL-TIME ORDERS ═══════════════════════════ */
+        function initSocket() {
+            const socket = io('http://localhost:3000', { transports: ['websocket', 'polling'] });
+
+            socket.on('connect', () => {
+                console.log('🔌 Admin socket connected:', socket.id);
+                socket.emit('join', { role: 'admin' });
+            });
+
+            socket.on('new_order', (order) => {
+                console.log('📦 Admin: new order received:', order);
+                liveAdminOrders += 1;
+                liveAdminRevenue += parseFloat(order.totalPrice || 0);
+                updateAdminKPIs();
+                showAdminToast(order);
+                showNotifDot();
+            });
+
+            socket.on('disconnect', () => console.log('❌ Admin socket disconnected'));
+        }
+
+        function updateAdminKPIs() {
+            const ordEl = document.getElementById('kpi-orders');
+            if (ordEl) ordEl.textContent = liveAdminOrders.toLocaleString('en-IN');
+
+            const revEl = document.getElementById('kpi-revenue');
+            if (revEl) {
+                const v = liveAdminRevenue;
+                revEl.textContent = v >= 10000000
+                    ? '₹' + (v / 10000000).toFixed(1) + 'Cr'
+                    : v >= 100000
+                        ? '₹' + (v / 100000).toFixed(1) + 'L'
+                        : '₹' + v.toLocaleString('en-IN');
+            }
+        }
+
+        function showNotifDot() {
+            // Light up the bell notification dot
+            const dot = document.querySelector('.notif-dot');
+            if (dot) {
+                dot.style.background = '#ef4444';
+                dot.style.boxShadow = '0 0 8px #ef4444';
+            }
+        }
+
+        /* ══ ADMIN TOAST NOTIFICATION ════════════════════════════════ */
+        function showAdminToast(order) {
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                container.style.cssText = `
+                    position: fixed;
+                    bottom: 1.5rem;
+                    right: 1.5rem;
+                    display: flex;
+                    flex-direction: column;
+                    gap: .6rem;
+                    z-index: 9999;
+                `;
+                document.body.appendChild(container);
+            }
+
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                background: linear-gradient(135deg, #1e1b2e, #0a0a0f);
+                border: 1px solid rgba(168, 85, 247, .45);
+                border-left: 3px solid #a855f7;
+                border-radius: 12px;
+                padding: 1rem 1.25rem;
+                min-width: 290px;
+                max-width: 350px;
+                box-shadow: 0 8px 32px rgba(0,0,0,.65);
+                animation: slideToast .35s cubic-bezier(.34,1.56,.64,1) both;
+                display: flex;
+                align-items: flex-start;
+                gap: .75rem;
+                cursor: pointer;
+            `;
+            const price = parseFloat(order.totalPrice || 0).toLocaleString('en-IN');
+            toast.innerHTML = `
+                <div style="font-size:1.5rem;line-height:1">🔔</div>
+                <div>
+                    <div style="font-size:.85rem;font-weight:700;color:#f1f5f9;margin-bottom:.2rem">New Order — Restaurant #${order.restaurantId}</div>
+                    <div style="font-size:.75rem;color:#94a3b8;">Order <strong style="color:#a855f7">#${order.orderId}</strong> · ₹${price}</div>
+                    <div style="font-size:.7rem;color:#475569;margin-top:.15rem">${order.deliveryType === 'home' ? '🏠 Delivery' : '🏪 Pickup'}</div>
+                </div>
+                <div style="margin-left:auto;font-size:.7rem;color:#475569;white-space:nowrap">${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</div>
+            `;
+            toast.onclick = () => toast.remove();
+
+            if (!document.getElementById('toast-keyframe-style')) {
+                const style = document.createElement('style');
+                style.id = 'toast-keyframe-style';
+                style.textContent = `
+                    @keyframes slideToast {
+                        from { opacity:0; transform: translateX(60px) scale(.95); }
+                        to   { opacity:1; transform: translateX(0) scale(1); }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 7000);
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="User Management — RestaurantAI Admin" />
+    <title>User Management — RestaurantAI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet" />
+
+    <style>
+        /* ── Reset ─────────────────────────────────────────────────── */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ── Variables ─────────────────────────────────────────────── */
+        :root {
+            --sidebar-w: 250px;
+            --sidebar-w-col: 70px;
+            --topbar-h: 64px;
+
+            --bg: #0a0a0f;
+            --bg-card: rgba(255, 255, 255, 0.04);
+            --bg-card-h: rgba(255, 255, 255, 0.07);
+            --sidebar-bg: #0d0d18;
+            --topbar-bg: rgba(13, 13, 24, 0.85);
+            --border: rgba(255, 255, 255, 0.07);
+
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --accent: #a855f7;
+            --accent-dark: #7c3aed;
+            --accent-glow: rgba(168, 85, 247, 0.25);
+            --orange: #f97316;
+            --green: #22c55e;
+            --red: #ef4444;
+            --blue: #3b82f6;
+
+            --radius: 14px;
+            --radius-lg: 18px;
+            --transition: .2s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        html {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        /* ── Animations ────────────────────────────────────────────── */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ══════════════════════════════════════════
+       SIDEBAR
+    ══════════════════════════════════════════ */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: var(--sidebar-w);
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            transition: width .3s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-w-col);
+        }
+
+        .sidebar-header {
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: .85rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-logo-icon {
+            font-size: 1.8rem;
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar-brand .name {
+            font-size: .85rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .sidebar-brand .sub {
+            font-size: .65rem;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 0;
+        }
+
+        .nav-section-label {
+            font-size: .65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: #475569;
+            padding: .75rem 1.25rem;
+            margin-top: .5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            padding: .7rem 1.25rem;
+            margin: .25rem .6rem;
+            border-radius: 9px;
+            cursor: pointer;
+            transition: all .2s;
+            color: var(--muted);
+            font-size: .85rem;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, .06);
+            color: var(--text);
+        }
+
+        .nav-item.active {
+            background: rgba(168, 85, 247, .15);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .nav-icon {
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .nav-label {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .nav-badge {
+            font-size: .62rem;
+            background: rgba(168, 85, 247, .18);
+            color: var(--accent);
+            padding: .2rem .45rem;
+            border-radius: 4px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .sidebar-footer {
+            padding: 1.25rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .9rem;
+            flex-shrink: 0;
+        }
+
+        .avatar-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .avatar-info .uname {
+            font-size: .75rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .avatar-info .urole {
+            font-size: .65rem;
+            color: var(--muted);
+            margin-top: 1px;
+        }
+
+        /* ══════════════════════════════════════════
+       TOPBAR
+    ══════════════════════════════════════════ */
+        .topbar {
+            position: fixed;
+            top: 0;
+            left: var(--sidebar-w);
+            right: 0;
+            height: var(--topbar-h);
+            background: var(--topbar-bg);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.75rem;
+            z-index: 99;
+            backdrop-filter: blur(10px);
+            transition: left .3s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        .sidebar.collapsed~.main-wrap .topbar {
+            left: var(--sidebar-w-col);
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .menu-toggle {
+            display: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .menu-toggle:hover {
+            background: rgba(255, 255, 255, .1);
+            color: var(--text);
+        }
+
+        .page-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .page-breadcrumb {
+            font-size: .72rem;
+            color: var(--muted);
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: .42rem .85rem;
+            font-size: .82rem;
+            color: var(--muted);
+            transition: all .25s;
+        }
+
+        .search-bar input {
+            background: none;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-size: .82rem;
+            font-family: 'Inter', sans-serif;
+            width: 160px;
+        }
+
+        .search-bar input::placeholder {
+            color: var(--muted);
+        }
+
+        .search-bar:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            font-size: .95rem;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, .1);
+            color: var(--text);
+        }
+
+        .topbar-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .85rem;
+            cursor: pointer;
+            border: 2px solid rgba(168, 85, 247, .3);
+        }
+
+        /* ══════════════════════════════════════════
+       MAIN AREA
+    ══════════════════════════════════════════ */
+        .main-wrap {
+            margin-left: var(--sidebar-w);
+            transition: margin-left .3s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        .sidebar.collapsed~.main-wrap {
+            margin-left: var(--sidebar-w-col);
+        }
+
+        .main-content {
+            padding: calc(var(--topbar-h) + 1.75rem) 1.75rem 2rem;
+            min-height: 100vh;
+        }
+
+        /* ── Section header ────────────────────────────────────────── */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.75rem;
+            animation: fadeUp .5s ease both;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        /* ── Buttons ──────────────────────────────────────────────── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+            padding: .55rem 1.2rem;
+            border-radius: 10px;
+            border: none;
+            font-size: .85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(168, 85, 247, .3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, .08);
+            border: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, .12);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, .12);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, .2);
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, .18);
+        }
+
+        .btn-sm {
+            padding: .35rem .75rem;
+            font-size: .75rem;
+        }
+
+        /* ── Card ────────────────────────────────────────────────– */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            animation: fadeUp .5s ease both;
+        }
+
+        /* ── Table ──────────────────────────────────────────────– */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .85rem;
+            animation: fadeUp .5s ease both;
+        }
+
+        .data-table thead tr {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table th {
+            font-size: .75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: #475569;
+            padding: .85rem 1rem;
+            text-align: left;
+        }
+
+        .data-table td {
+            padding: 1rem;
+            color: var(--muted);
+            border-bottom: 1px solid rgba(255, 255, 255, .03);
+        }
+
+        .data-table tbody tr:hover {
+            background: rgba(255, 255, 255, .02);
+        }
+
+        .data-table tbody tr:hover td {
+            color: var(--text);
+        }
+
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .user-email {
+            color: var(--accent);
+        }
+
+        /* ── Status pill ────────────────────────────────────────– */
+        .pill {
+            display: inline-block;
+            font-size: .72rem;
+            font-weight: 700;
+            padding: .35rem .75rem;
+            border-radius: 6px;
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .pill-active {
+            background: rgba(34, 197, 94, .12);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, .2);
+        }
+
+        .pill-inactive {
+            background: rgba(239, 68, 68, .12);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, .2);
+        }
+
+        .pill-pending {
+            background: rgba(234, 179, 8, .12);
+            color: #fbbf24;
+            border: 1px solid rgba(234, 179, 8, .2);
+        }
+
+        /* ── Role badge ──────────────────────────────────────── */
+        .role-badge {
+            display: inline-block;
+            font-size: .72rem;
+            font-weight: 600;
+            padding: .3rem .65rem;
+            border-radius: 6px;
+            background: rgba(168, 85, 247, .12);
+            color: var(--accent);
+            border: 1px solid rgba(168, 85, 247, .2);
+        }
+
+        .role-badge.admin {
+            background: rgba(247, 144, 9, .12);
+            color: #fbbf24;
+            border-color: rgba(247, 144, 9, .2);
+        }
+
+        .role-badge.manager {
+            background: rgba(59, 130, 246, .12);
+            color: #93c5fd;
+            border-color: rgba(59, 130, 246, .2);
+        }
+
+        .role-badge.staff {
+            background: rgba(34, 197, 94, .12);
+            color: #4ade80;
+            border-color: rgba(34, 197, 94, .2);
+        }
+
+        /* ── Action buttons in table ────────────────────────── */
+        .action-group {
+            display: flex;
+            gap: .5rem;
+        }
+
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, .05);
+            color: var(--muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .9rem;
+            transition: all .2s;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, .1);
+            color: var(--text);
+        }
+
+        /* ══════════════════════════════════════════
+       MODAL
+    ══════════════════════════════════════════ */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, .6);
+            z-index: 200;
+            animation: fadeIn .2s ease;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-backdrop.active {
+            display: block;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.95);
+            width: 90%;
+            max-width: 500px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            z-index: 201;
+            animation: slideIn .3s ease both;
+            overflow: hidden;
+        }
+
+        .modal.active {
+            display: block;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, .05);
+            border: none;
+            color: var(--muted);
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .2s;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, .1);
+            color: var(--text);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: .75rem;
+            justify-content: flex-end;
+        }
+
+        /* ── Form ────────────────────────────────────────────── */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            display: block;
+            font-size: .85rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: .5rem;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: .7rem .85rem;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: .85rem;
+            font-family: 'Inter', sans-serif;
+            transition: all .2s;
+        }
+
+        .form-input::placeholder,
+        .form-select::placeholder,
+        .form-textarea::placeholder {
+            color: var(--muted);
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+            background: rgba(255, 255, 255, .07);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* ── Responsive ────────────────────────────────────────– */
+        @media (max-width: 900px) {
+            :root {
+                --sidebar-w: 70px;
+            }
+
+            .sidebar-brand,
+            .nav-label,
+            .nav-badge,
+            .avatar-info,
+            .nav-section-label {
+                opacity: 0;
+                pointer-events: none;
+            }
+
+            .menu-toggle {
+                display: flex;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .main-content {
+                padding: calc(var(--topbar-h) + 1rem) 1rem 1.5rem;
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .data-table {
+                font-size: .75rem;
+            }
+
+            .data-table th,
+            .data-table td {
+                padding: .6rem;
+            }
+
+            .action-group {
+                flex-direction: column;
+                gap: .25rem;
+            }
+
+            .modal {
+                max-width: calc(100% - 2rem);
+            }
+
+            .search-bar {
+                display: none;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            animation: fadeUp .5s ease both;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: .5rem;
+        }
+
+        .empty-state-text {
+            color: var(--muted);
+            font-size: .9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            align-items: center;
+            animation: fadeUp .5s ease both;
+        }
+
+        .filter-bar input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-select {
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: .6rem .85rem;
+            color: var(--text);
+            font-size: .85rem;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .filter-select:hover {
+            border-color: var(--accent);
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .role-selector {
+            display: flex;
+            gap: .5rem;
+            flex-wrap: wrap;
+        }
+
+        .role-option {
+            padding: .5rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, .05);
+            color: var(--muted);
+            cursor: pointer;
+            transition: all .2s;
+            font-size: .85rem;
+            font-weight: 500;
+        }
+
+        .role-option:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .role-option.selected {
+            background: rgba(168, 85, 247, .18);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ══════════ SIDEBAR ══════════ -->
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="Admin Navigation">
+
+        <div class="sidebar-header">
+            <div class="sidebar-logo-icon" aria-hidden="true">🍜</div>
+            <div class="sidebar-brand">
+                <div class="name">RestaurantAI</div>
+                <div class="sub">Admin Console</div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Main</div>
+
+            <div class="nav-item" onclick="navigate('dashboard')">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label">Dashboard</span>
+            </div>
+
+            <div class="nav-item" onclick="navigate('restaurants')">
+                <span class="nav-icon">🏪</span>
+                <span class="nav-label">Restaurants</span>
+                <span class="nav-badge">12</span>
+            </div>
+
+            <div class="nav-item" onclick="navigate('orders')">
+                <span class="nav-icon">📋</span>
+                <span class="nav-label">Orders</span>
+                <span class="nav-badge">3</span>
+            </div>
+
+            <div class="nav-item" onclick="navigate('revenue')">
+                <span class="nav-icon">💰</span>
+                <span class="nav-label">Revenue</span>
+            </div>
+
+            <div class="nav-section-label">AI Tools</div>
+
+            <div class="nav-item" onclick="navigate('insights')">
+                <span class="nav-icon">🤖</span>
+                <span class="nav-label">AI Insights</span>
+            </div>
+
+            <div class="nav-item" onclick="navigate('voice')">
+                <span class="nav-icon">🎙️</span>
+                <span class="nav-label">Voice Orders</span>
+            </div>
+
+            <div class="nav-item" onclick="navigate('combos')">
+                <span class="nav-icon">🍱</span>
+                <span class="nav-label">Combo Rules</span>
+            </div>
+
+            <div class="nav-section-label">System</div>
+
+            <div class="nav-item active" onclick="navigate('users')">
+                <span class="nav-icon">👥</span>
+                <span class="nav-label">Users</span>
+            </div>
+
+            <div class="nav-item" onclick="navigate('settings')">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-label">Settings</span>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="avatar" aria-hidden="true">👤</div>
+            <div class="avatar-info">
+                <div class="uname">Super Admin</div>
+                <div class="urole">admin@demo.com</div>
+            </div>
+        </div>
+
+    </aside>
+
+    <!-- ══════════ MAIN WRAP ══════════ -->
+    <div class="main-wrap" id="mainWrap">
+
+        <!-- ══════════ TOP NAVBAR ══════════ -->
+        <header class="topbar" role="banner">
+            <div class="topbar-left">
+                <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">☰</button>
+                <div>
+                    <div class="page-title">User Management</div>
+                    <div class="page-breadcrumb">Admin Console › Users</div>
+                </div>
+            </div>
+
+            <div class="topbar-right">
+                <div class="search-bar">
+                    <span style="color:var(--muted)">🔍</span>
+                    <input type="text" placeholder="Search users…" aria-label="Search" />
+                </div>
+                <button class="icon-btn" aria-label="Refresh" onclick="refreshTable()">🔄</button>
+                <button class="icon-btn" aria-label="Logout" onclick="logout()">🚪</button>
+                <div class="topbar-avatar" role="img" aria-label="Admin user">👤</div>
+            </div>
+        </header>
+
+        <!-- ══════════ CONTENT ══════════ -->
+        <main class="main-content" id="mainContent" role="main">
+
+            <!-- Section header with add button -->
+            <div class="section-header">
+                <h1 class="section-title">User Management</h1>
+                <button class="btn btn-primary" onclick="openAddModal()">
+                    <span>➕</span>
+                    <span>Add User</span>
+                </button>
+            </div>
+
+            <!-- Filter bar -->
+            <div class="filter-bar">
+                <input type="text" class="form-input" placeholder="Search by name or email…" 
+                    id="searchInput" onkeyup="filterTable()" />
+                <select class="filter-select" id="roleFilter" onchange="filterTable()">
+                    <option value="">All Roles</option>
+                    <option value="admin">Admin</option>
+                    <option value="manager">Manager</option>
+                    <option value="staff">Staff</option>
+                </select>
+                <select class="filter-select" id="statusFilter" onchange="filterTable()">
+                    <option value="">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+            </div>
+
+            <!-- Users table -->
+            <div class="card">
+                <table class="data-table" id="usersTable" role="table" aria-label="Users list">
+                    <thead>
+                        <tr>
+                            <th>User Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Filled by JavaScript -->
+                    </tbody>
+                </table>
+                <div id="emptyState" class="empty-state" style="display:none;">
+                    <div class="empty-state-icon">👥</div>
+                    <div class="empty-state-title">No users found</div>
+                    <div class="empty-state-text">Start by adding your first user to the system</div>
+                    <button class="btn btn-primary" onclick="openAddModal()">
+                        <span>➕</span>
+                        <span>Add User</span>
+                    </button>
+                </div>
+            </div>
+
+        </main>
+
+    </div>
+
+    <!-- ══════════ MODAL BACKDROP ══════════ -->
+    <div class="modal-backdrop" id="backdrop" onclick="closeModal()"></div>
+
+    <!-- ══════════ ADD/EDIT USER MODAL ══════════ -->
+    <div class="modal" id="modal">
+        <div class="modal-header">
+            <h2 class="modal-title" id="modalTitle">Add User</h2>
+            <button class="modal-close" onclick="closeModal()" aria-label="Close modal">✕</button>
+        </div>
+
+        <form id="userForm" onsubmit="handleFormSubmit(event)">
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label" for="userName">User Name *</label>
+                    <input type="text" id="userName" class="form-input" placeholder="e.g., John Smith" 
+                        required />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="userEmail">Email Address *</label>
+                    <input type="email" id="userEmail" class="form-input" placeholder="e.g., john@example.com" 
+                        required />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="userRole">Role *</label>
+                    <select id="userRole" class="form-select" required>
+                        <option value="">Select role</option>
+                        <option value="admin">Admin</option>
+                        <option value="manager">Manager</option>
+                        <option value="staff">Staff</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="userStatus">Status *</label>
+                    <select id="userStatus" class="form-select" required>
+                        <option value="">Select status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="userPhone">Phone Number</label>
+                    <input type="tel" id="userPhone" class="form-input" placeholder="e.g., +1-800-123-4567" />
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary">
+                    <span id="submitBtnText">Save User</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- ══════════ CHANGE ROLE MODAL ══════════ -->
+    <div class="modal" id="roleModal">
+        <div class="modal-header">
+            <h2 class="modal-title">Change User Role</h2>
+            <button class="modal-close" onclick="closeRoleModal()" aria-label="Close modal">✕</button>
+        </div>
+
+        <div class="modal-body">
+            <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border);">
+                <div style="font-size: .9rem; color: var(--muted); margin-bottom: .25rem;">User:</div>
+                <div style="font-size: 1rem; font-weight: 600; color: var(--text);" id="roleModalUserName"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Select New Role *</label>
+                <div class="role-selector">
+                    <button type="button" class="role-option" onclick="selectRole('admin')">
+                        👑 Admin
+                    </button>
+                    <button type="button" class="role-option" onclick="selectRole('manager')">
+                        🎯 Manager
+                    </button>
+                    <button type="button" class="role-option" onclick="selectRole('staff')">
+                        👤 Staff
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeRoleModal()">Cancel</button>
+            <button type="button" class="btn btn-primary" onclick="confirmRoleChange()">Update Role</button>
+        </div>
+    </div>
+
+    <!-- ══════════ SCRIPT ══════════ -->
+    <script>
+        "use strict";
+
+        // ═══ DATA STORE ═══════════════════════════════════════════
+        let users = [
+            {
+                id: 1,
+                name: 'Rajesh Kumar',
+                email: 'rajesh@admin.com',
+                role: 'admin',
+                status: 'active',
+                phone: '+1-800-111-1111',
+                joinDate: '2024-01-15'
+            },
+            {
+                id: 2,
+                name: 'Priya Sharma',
+                email: 'priya@manager.com',
+                role: 'manager',
+                status: 'active',
+                phone: '+1-800-222-2222',
+                joinDate: '2024-02-10'
+            },
+            {
+                id: 3,
+                name: 'Ahmed Hassan',
+                email: 'ahmed@staff.com',
+                role: 'staff',
+                status: 'active',
+                phone: '+1-800-333-3333',
+                joinDate: '2024-03-01'
+            },
+            {
+                id: 4,
+                name: 'Lisa Chen',
+                email: 'lisa@manager.com',
+                role: 'manager',
+                status: 'inactive',
+                phone: '+1-800-444-4444',
+                joinDate: '2024-01-20'
+            },
+            {
+                id: 5,
+                name: 'Deepak Singh',
+                email: 'deepak@staff.com',
+                role: 'staff',
+                status: 'active',
+                phone: '+1-800-555-5555',
+                joinDate: '2024-02-28'
+            },
+        ];
+
+        let nextId = Math.max(...users.map(u => u.id)) + 1;
+        let editingId = null;
+        let selectedRoleForChange = null;
+        let roleChangeUserId = null;
+
+        // ═══ UI CONTROL ════════════════════════════════════════
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+        }
+
+        function navigate(page) {
+            if (page === 'dashboard') {
+                window.location.href = 'admin-dashboard.html';
+            }
+            if (page === 'restaurants') {
+                window.location.href = 'admin-restaurants.html';
+            }
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+
+        function logout() {
+            if (confirm('Log out of the admin console?')) {
+                window.location.href = 'admin-login.html';
+            }
+        }
+
+        function refreshTable() {
+            const btn = event.currentTarget;
+            btn.style.animation = 'spin .7s linear infinite';
+            btn.disabled = true;
+            setTimeout(() => {
+                btn.style.animation = '';
+                btn.disabled = false;
+                renderTable();
+            }, 800);
+        }
+
+        // ═══ MODAL MANAGEMENT ══════════════════════════════════
+        function openAddModal() {
+            editingId = null;
+            document.getElementById('userForm').reset();
+            document.getElementById('modalTitle').textContent = 'Add User';
+            document.getElementById('submitBtnText').textContent = 'Save User';
+            openModal();
+        }
+
+        function openEditModal(id) {
+            const user = users.find(u => u.id === id);
+            if (!user) return;
+
+            editingId = id;
+            document.getElementById('userName').value = user.name;
+            document.getElementById('userEmail').value = user.email;
+            document.getElementById('userRole').value = user.role;
+            document.getElementById('userStatus').value = user.status;
+            document.getElementById('userPhone').value = user.phone || '';
+
+            document.getElementById('modalTitle').textContent = 'Edit User';
+            document.getElementById('submitBtnText').textContent = 'Update User';
+            openModal();
+        }
+
+        function openRoleModal(id) {
+            const user = users.find(u => u.id === id);
+            if (!user) return;
+
+            roleChangeUserId = id;
+            selectedRoleForChange = null;
+            document.getElementById('roleModalUserName').textContent = user.name;
+            document.querySelectorAll('.role-option').forEach(btn => btn.classList.remove('selected'));
+            document.getElementById('roleModal').classList.add('active');
+            document.getElementById('backdrop').classList.add('active');
+        }
+
+        function closeRoleModal() {
+            document.getElementById('roleModal').classList.remove('active');
+            roleChangeUserId = null;
+            selectedRoleForChange = null;
+        }
+
+        function selectRole(role) {
+            selectedRoleForChange = role;
+            document.querySelectorAll('.role-option').forEach(btn => btn.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+        }
+
+        function confirmRoleChange() {
+            if (!selectedRoleForChange || !roleChangeUserId) return;
+
+            const user = users.find(u => u.id === roleChangeUserId);
+            if (user) {
+                const oldRole = user.role;
+                user.role = selectedRoleForChange;
+                renderTable();
+                closeRoleModal();
+                showNotification(`${user.name}'s role changed from ${oldRole} to ${selectedRoleForChange}`, 'success');
+            }
+        }
+
+        function openModal() {
+            document.getElementById('backdrop').classList.add('active');
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('backdrop').classList.remove('active');
+            document.getElementById('modal').classList.remove('active');
+            editingId = null;
+        }
+
+        // ═══ FORM HANDLING ═════════════════════════════════════
+        function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const formData = {
+                name: document.getElementById('userName').value,
+                email: document.getElementById('userEmail').value,
+                role: document.getElementById('userRole').value,
+                status: document.getElementById('userStatus').value,
+                phone: document.getElementById('userPhone').value,
+            };
+
+            if (editingId) {
+                // Update existing
+                const idx = users.findIndex(u => u.id === editingId);
+                if (idx !== -1) {
+                    users[idx] = { ...users[idx], ...formData };
+                    showNotification('User updated successfully!', 'success');
+                }
+            } else {
+                // Add new
+                users.push({
+                    id: nextId++,
+                    ...formData,
+                    joinDate: new Date().toISOString().split('T')[0]
+                });
+                showNotification('User added successfully!', 'success');
+            }
+
+            renderTable();
+            closeModal();
+        }
+
+        // ═══ TABLE RENDERING ═══════════════════════════════════
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            const emptyState = document.getElementById('emptyState');
+
+            if (users.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            tbody.innerHTML = users.map(user => `
+        <tr>
+          <td><span class="user-name">${escapeHtml(user.name)}</span></td>
+          <td><span class="user-email">${escapeHtml(user.email)}</span></td>
+          <td>
+            <span class="role-badge ${user.role}">
+              ${user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+            </span>
+          </td>
+          <td>
+            <span class="pill pill-${user.status}">
+              ${user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+            </span>
+          </td>
+          <td>
+            <div class="action-group">
+              <button class="action-btn" title="Edit user" onclick="openEditModal(${user.id})">✏️</button>
+              <button class="action-btn" title="Change role" onclick="openRoleModal(${user.id})">🔄</button>
+              <button class="action-btn" title="Deactivate user" onclick="deactivateUser(${user.id})">🚫</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+        }
+
+        // ═══ ACTIONS ═══════════════════════════════════════════
+        function deactivateUser(id) {
+            const user = users.find(u => u.id === id);
+            if (!user) return;
+
+            if (user.status === 'inactive') {
+                alert(`${user.name} is already inactive.`);
+                return;
+            }
+
+            if (confirm(`Deactivate user "${user.name}"?`)) {
+                user.status = 'inactive';
+                renderTable();
+                showNotification(`${user.name} has been deactivated.`, 'warning');
+            }
+        }
+
+        // ═══ FILTERING ═════════════════════════════════════════
+        function filterTable() {
+            const searchVal = document.getElementById('searchInput').value.toLowerCase();
+            const roleVal = document.getElementById('roleFilter').value;
+            const statusVal = document.getElementById('statusFilter').value;
+
+            const filtered = users.filter(user => {
+                const matchSearch = !searchVal || 
+                    user.name.toLowerCase().includes(searchVal) ||
+                    user.email.toLowerCase().includes(searchVal);
+
+                const matchRole = !roleVal || user.role === roleVal;
+                const matchStatus = !statusVal || user.status === statusVal;
+
+                return matchSearch && matchRole && matchStatus;
+            });
+
+            const tbody = document.getElementById('tableBody');
+            const emptyState = document.getElementById('emptyState');
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.style.display = 'block';
+                emptyState.querySelector('.empty-state-title').textContent = 'No users match your filters';
+                emptyState.querySelector('.empty-state-text').textContent = 'Try adjusting your search criteria';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            tbody.innerHTML = filtered.map(user => `
+        <tr>
+          <td><span class="user-name">${escapeHtml(user.name)}</span></td>
+          <td><span class="user-email">${escapeHtml(user.email)}</span></td>
+          <td>
+            <span class="role-badge ${user.role}">
+              ${user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+            </span>
+          </td>
+          <td>
+            <span class="pill pill-${user.status}">
+              ${user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+            </span>
+          </td>
+          <td>
+            <div class="action-group">
+              <button class="action-btn" title="Edit user" onclick="openEditModal(${user.id})">✏️</button>
+              <button class="action-btn" title="Change role" onclick="openRoleModal(${user.id})">🔄</button>
+              <button class="action-btn" title="Deactivate user" onclick="deactivateUser(${user.id})">🚫</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+        }
+
+        // ═══ UTILITIES ═════════════════════════════════════════
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showNotification(message, type = 'info') {
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        // ═══ INIT ══════════════════════════════════════════════
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTable();
+            // Close modal on Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeModal();
+                    closeRoleModal();
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>

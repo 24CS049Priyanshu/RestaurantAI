@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Restaurant Dashboard — RestaurantAI" />
+    <title>Restaurant Dashboard — RestaurantAI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap"
+        rel="stylesheet" />
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <!-- Socket.io client -->
+    <script src="/socket.io/socket.io.js"></script>
+
+    <style>
+        /* ── Reset ─────────────────────────────────────────────────── */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ── Variables ─────────────────────────────────────────────── */
+        :root {
+            --sidebar-w: 250px;
+            --sidebar-w-col: 70px;
+            --topbar-h: 64px;
+
+            --bg: #0a0a0f;
+            --bg-card: rgba(255, 255, 255, 0.04);
+            --bg-card-h: rgba(255, 255, 255, 0.07);
+            --sidebar-bg: #0d0d18;
+            --topbar-bg: rgba(13, 13, 24, 0.85);
+            --border: rgba(255, 255, 255, 0.07);
+
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --accent: #a855f7;
+            --accent-dark: #7c3aed;
+            --accent-glow: rgba(168, 85, 247, 0.25);
+            --orange: #f97316;
+            --green: #22c55e;
+            --red: #ef4444;
+            --blue: #3b82f6;
+
+            --radius: 14px;
+            --radius-lg: 18px;
+        }
+
+        html {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        /* ── Animations ────────────────────────────────────────────── */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        /* ══════════════════════════════════════════
+       SIDEBAR
+    ══════════════════════════════════════════ */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: var(--sidebar-w);
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            transition: width .3s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-w-col);
+        }
+
+        .sidebar-header {
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: .85rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-logo-icon {
+            font-size: 1.8rem;
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar-brand .name {
+            font-size: .85rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .sidebar-brand .sub {
+            font-size: .65rem;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 0;
+        }
+
+        .nav-section-label {
+            font-size: .65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: #475569;
+            padding: .75rem 1.25rem;
+            margin-top: .5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            padding: .7rem 1.25rem;
+            margin: .25rem .6rem;
+            border-radius: 9px;
+            cursor: pointer;
+            transition: all .2s;
+            color: var(--muted);
+            font-size: .85rem;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, .06);
+            color: var(--text);
+        }
+
+        .nav-item.active {
+            background: rgba(168, 85, 247, .15);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .nav-icon {
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .nav-label {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sidebar-footer {
+            padding: 1.25rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .9rem;
+            flex-shrink: 0;
+        }
+
+        .avatar-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .avatar-info .uname {
+            font-size: .75rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .avatar-info .urole {
+            font-size: .65rem;
+            color: var(--muted);
+            margin-top: 1px;
+        }
+
+        /* ══════════════════════════════════════════
+       TOPBAR
+    ══════════════════════════════════════════ */
+        .topbar {
+            position: fixed;
+            top: 0;
+            left: var(--sidebar-w);
+            right: 0;
+            height: var(--topbar-h);
+            background: var(--topbar-bg);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.75rem;
+            z-index: 99;
+            backdrop-filter: blur(10px);
+            transition: left .3s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        .sidebar.collapsed~.main-wrap .topbar {
+            left: var(--sidebar-w-col);
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .menu-toggle {
+            display: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .menu-toggle:hover {
+            background: rgba(255, 255, 255, .1);
+            color: var(--text);
+        }
+
+        .page-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .page-breadcrumb {
+            font-size: .72rem;
+            color: var(--muted);
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: .42rem .85rem;
+            font-size: .82rem;
+            color: var(--muted);
+            transition: all .25s;
+        }
+
+        .search-bar input {
+            background: none;
+            border: none;
+            outline: none;
+            color: var(--text);
+            font-size: .82rem;
+            font-family: 'Inter', sans-serif;
+            width: 160px;
+        }
+
+        .search-bar input::placeholder {
+            color: var(--muted);
+        }
+
+        .search-bar:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            font-size: .95rem;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, .1);
+            color: var(--text);
+        }
+
+        .topbar-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .85rem;
+            cursor: pointer;
+            border: 2px solid rgba(168, 85, 247, .3);
+        }
+
+        /* ══════════════════════════════════════════
+       MAIN AREA
+    ══════════════════════════════════════════ */
+        .main-wrap {
+            margin-left: var(--sidebar-w);
+            transition: margin-left .3s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        .sidebar.collapsed~.main-wrap {
+            margin-left: var(--sidebar-w-col);
+        }
+
+        .main-content {
+            padding: calc(var(--topbar-h) + 1.75rem) 1.75rem 2rem;
+            min-height: 100vh;
+        }
+
+        /* ── Section header ────────────────────────────────────────── */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.75rem;
+            animation: fadeUp .5s ease both;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        /* ── KPI Cards Grid ────────────────────────────────────────── */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.1rem;
+            margin-bottom: 1.75rem;
+            animation: fadeUp .5s ease both;
+        }
+
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all .3s;
+        }
+
+        .kpi-card:hover {
+            background: var(--bg-card-h);
+            border-color: var(--accent);
+        }
+
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle, var(--accent-glow), transparent);
+            opacity: .5;
+        }
+
+        .kpi-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .kpi-icon {
+            font-size: 1.8rem;
+        }
+
+        .kpi-badge {
+            font-size: .7rem;
+            font-weight: 700;
+            padding: .25rem .6rem;
+            border-radius: 6px;
+            background: rgba(34, 197, 94, .12);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, .2);
+        }
+
+        .kpi-badge.down {
+            background: rgba(239, 68, 68, .12);
+            color: #f87171;
+            border-color: rgba(239, 68, 68, .2);
+        }
+
+        .kpi-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: .5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .kpi-label {
+            font-size: .8rem;
+            color: var(--muted);
+            margin-bottom: .25rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .kpi-subtext {
+            font-size: .7rem;
+            color: #475569;
+            position: relative;
+            z-index: 1;
+        }
+
+        .kpi-progress {
+            height: 4px;
+            background: rgba(255, 255, 255, .08);
+            border-radius: 2px;
+            margin-top: 1rem;
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+        }
+
+        .kpi-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-dark), var(--accent));
+            border-radius: 2px;
+            width: 0%;
+            transition: width 1s cubic-bezier(.4, 0, .2, 1);
+        }
+
+        .kpi-purple {
+            --accent: #a855f7;
+        }
+
+        .kpi-orange {
+            --accent: #f97316;
+        }
+
+        .kpi-green {
+            --accent: #22c55e;
+        }
+
+        .kpi-blue {
+            --accent: #3b82f6;
+        }
+
+        /* ── Charts Grid ────────────────────────────────────────── */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.1rem;
+            margin-bottom: 1.75rem;
+            animation: fadeUp .5s .1s ease both;
+        }
+
+        .chart-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            animation: fadeUp .5s ease both;
+        }
+
+        .chart-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-title-group .ctitle {
+            font-size: .9rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .chart-title-group .csub {
+            font-size: .72rem;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        /* Period tabs */
+        .period-tabs {
+            display: flex;
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid var(--border);
+            border-radius: 9px;
+            padding: 2px;
+        }
+
+        .ptab {
+            padding: .3rem .7rem;
+            font-size: .72rem;
+            font-weight: 600;
+            border-radius: 7px;
+            background: transparent;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .ptab.active {
+            background: rgba(168, 85, 247, .18);
+            color: var(--accent);
+        }
+
+        /* Canvas wrapper */
+        .chart-wrap {
+            position: relative;
+            height: 250px;
+        }
+
+        /* Legend */
+        .chart-legend {
+            display: flex;
+            flex-direction: column;
+            gap: .55rem;
+            margin-top: 1rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: .75rem;
+        }
+
+        .legend-dot-label {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            color: var(--muted);
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .legend-val {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        /* ── Responsive ────────────────────────────────────────── */
+        @media (max-width: 1200px) {
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 900px) {
+            :root {
+                --sidebar-w: 70px;
+            }
+
+            .sidebar-brand,
+            .nav-label,
+            .avatar-info,
+            .nav-section-label {
+                opacity: 0;
+                pointer-events: none;
+            }
+
+            .menu-toggle {
+                display: flex;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .main-content {
+                padding: calc(var(--topbar-h) + 1rem) 1rem 1.5rem;
+            }
+
+            .search-bar {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ══════════ SIDEBAR ══════════ -->
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="Restaurant Navigation">
+
+        <div class="sidebar-header">
+            <div class="sidebar-logo-icon" aria-hidden="true">🍜</div>
+            <div class="sidebar-brand">
+                <div class="name">Spice Garden</div>
+                <div class="sub">Dashboard</div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Menu</div>
+
+            <div class="nav-item active" onclick="navigate('dashboard')">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label">Dashboard</span>
+            </div>
+
+            <div class="nav-item" onclick="navigate('orders')">
+                <span class="nav-icon">📋</span>
+                <span class="nav-label">Orders</span>
+            </div>
+
+            <div class="nav-item" onclick="navigate('menu')">
+                <span class="nav-icon">🍱</span>
+                <span class="nav-label">Menu Items</span>
+            </div>
+
+            <div class="nav-item" onclick="navigate('customers')">
+                <span class="nav-icon">👥</span>
+                <span class="nav-label">Customers</span>
+            </div>
+
+            <div class="nav-item" onclick="navigate('reports')">
+                <span class="nav-icon">📈</span>
+                <span class="nav-label">Reports</span>
+            </div>
+
+            <div class="nav-section-label">Settings</div>
+
+            <div class="nav-item" onclick="navigate('profile')">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-label">Settings</span>
+            </div>
+
+            <div class="nav-item" onclick="navigate('support')">
+                <span class="nav-icon">💬</span>
+                <span class="nav-label">Support</span>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="avatar" aria-hidden="true">👨‍🍳</div>
+            <div class="avatar-info">
+                <div class="uname">Rajesh Kumar</div>
+                <div class="urole">Owner</div>
+            </div>
+        </div>
+
+    </aside>
+
+    <!-- ══════════ MAIN WRAP ══════════ -->
+    <div class="main-wrap" id="mainWrap">
+
+        <!-- ══════════ TOP NAVBAR ══════════ -->
+        <header class="topbar" role="banner">
+            <div class="topbar-left">
+                <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">☰</button>
+                <div>
+                    <div class="page-title">Dashboard</div>
+                    <div class="page-breadcrumb">Spice Garden › Overview</div>
+                </div>
+            </div>
+
+            <div class="topbar-right">
+                <div class="search-bar">
+                    <span style="color:var(--muted)">🔍</span>
+                    <input type="text" placeholder="Search orders…" aria-label="Search" />
+                </div>
+                <button class="icon-btn" aria-label="Notifications">🔔</button>
+                <button class="icon-btn" aria-label="Refresh" onclick="refreshData()">🔄</button>
+                <button class="icon-btn" aria-label="Logout" onclick="logout()">🚪</button>
+                <div class="topbar-avatar" role="img" aria-label="User avatar">👨‍🍳</div>
+            </div>
+        </header>
+
+        <!-- ══════════ DASHBOARD CONTENT ══════════ -->
+        <main class="main-content" id="mainContent" role="main">
+
+            <!-- ── KPI Cards ──────────────────────────────────────────── -->
+            <div class="section-header">
+                <span style="font-size: 1.4rem; font-weight: 700; color: var(--text);">Performance Overview</span>
+            </div>
+
+            <div class="kpi-grid">
+                <!-- Total Revenue -->
+                <div class="kpi-card kpi-purple" style="animation-delay:.05s">
+                    <div class="kpi-top">
+                        <div class="kpi-icon" aria-hidden="true">💰</div>
+                        <span class="kpi-badge">▲ 12.5%</span>
+                    </div>
+                    <div class="kpi-value" id="kpi-revenue">₹0</div>
+                    <div class="kpi-label">Total Revenue</div>
+                    <div class="kpi-subtext">This month</div>
+                    <div class="kpi-progress">
+                        <div class="kpi-progress-bar" id="pb-revenue" style="width:0"></div>
+                    </div>
+                </div>
+
+                <!-- Total Orders -->
+                <div class="kpi-card kpi-orange" style="animation-delay:.10s">
+                    <div class="kpi-top">
+                        <div class="kpi-icon" aria-hidden="true">📋</div>
+                        <span class="kpi-badge">▲ 8.3%</span>
+                    </div>
+                    <div class="kpi-value" id="kpi-orders">0</div>
+                    <div class="kpi-label">Total Orders</div>
+                    <div class="kpi-subtext">This month</div>
+                    <div class="kpi-progress">
+                        <div class="kpi-progress-bar" id="pb-orders" style="width:0"></div>
+                    </div>
+                </div>
+
+                <!-- Average Order Value -->
+                <div class="kpi-card kpi-green" style="animation-delay:.15s">
+                    <div class="kpi-top">
+                        <div class="kpi-icon" aria-hidden="true">📊</div>
+                        <span class="kpi-badge">▲ 5.2%</span>
+                    </div>
+                    <div class="kpi-value" id="kpi-aov">₹0</div>
+                    <div class="kpi-label">Avg Order Value</div>
+                    <div class="kpi-subtext">Per transaction</div>
+                    <div class="kpi-progress">
+                        <div class="kpi-progress-bar" id="pb-aov" style="width:0"></div>
+                    </div>
+                </div>
+
+                <!-- Active Menu Items -->
+                <div class="kpi-card kpi-blue" style="animation-delay:.20s">
+                    <div class="kpi-top">
+                        <div class="kpi-icon" aria-hidden="true">🍱</div>
+                        <span class="kpi-badge">▲ 3 new</span>
+                    </div>
+                    <div class="kpi-value" id="kpi-items">0</div>
+                    <div class="kpi-label">Active Menu Items</div>
+                    <div class="kpi-subtext">Available for order</div>
+                    <div class="kpi-progress">
+                        <div class="kpi-progress-bar" id="pb-items" style="width:0"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── Charts ─────────────────────────────────────────────── -->
+            <div class="section-header" style="margin-top: 2.5rem;">
+                <span style="font-size: 1.4rem; font-weight: 700; color: var(--text);">Sales Analytics</span>
+            </div>
+
+            <div class="charts-grid">
+
+                <!-- Daily Sales Chart (line) -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title-group">
+                            <div class="ctitle">Daily Sales</div>
+                            <div class="csub">Revenue trend over time</div>
+                        </div>
+                        <div class="period-tabs">
+                            <button class="ptab active" onclick="switchPeriod(this,'7d')">7D</button>
+                            <button class="ptab" onclick="switchPeriod(this,'30d')">30D</button>
+                            <button class="ptab" onclick="switchPeriod(this,'90d')">90D</button>
+                        </div>
+                    </div>
+                    <div class="chart-wrap">
+                        <canvas id="salesChart" aria-label="Daily sales chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Top Selling Items (bar) -->
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div class="chart-title-group">
+                            <div class="ctitle">Top 5 Items</div>
+                            <div class="csub">Best sellers this month</div>
+                        </div>
+                    </div>
+                    <div class="chart-wrap">
+                        <canvas id="topItemsChart" aria-label="Top selling items chart"></canvas>
+                    </div>
+                </div>
+
+            </div>
+
+        </main><!-- /main-content -->
+
+    </div><!-- /main-wrap -->
+
+    <!-- ───────────────────── SCRIPT ───────────────────────────── -->
+    <script>
+        "use strict";
+
+        /* ══ SIDEBAR TOGGLE ══════════════════════════════════════════ */
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+        }
+
+        /* ══ NAV ══════════════════════════════════════════════════════ */
+        function navigate(page) {
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            console.log(`Navigating to ${page}...`);
+        }
+
+        /* ══ LOGOUT ═════════════════════════════════════════════════ */
+        function logout() {
+            if (confirm('Log out?')) {
+                window.location.href = 'restaurant-login.html';
+            }
+        }
+
+        /* ══ KPI COUNTER ANIMATION ═══════════════════════════════════ */
+        function animateCount(elemId, target, prefix = '', suffix = '', duration = 1500) {
+            const el = document.getElementById(elemId);
+            const start = performance.now();
+            function tick(now) {
+                const progress = Math.min((now - start) / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                const value = Math.floor(eased * target);
+                el.textContent = prefix + value.toLocaleString('en-IN') + suffix;
+                if (progress < 1) requestAnimationFrame(tick);
+                else el.textContent = prefix + target.toLocaleString('en-IN') + suffix;
+            }
+            requestAnimationFrame(tick);
+        }
+
+        function animateProgressBar(id, pct, delay = 300) {
+            setTimeout(() => {
+                document.getElementById(id).style.width = pct + '%';
+            }, delay);
+        }
+
+        function loadKPIs() {
+            animateCount('kpi-revenue', 0, '₹', '', 1200);
+            animateCount('kpi-orders', 285, '', '', 1300);
+            animateCount('kpi-aov', 450, '₹', '', 1200);
+            animateCount('kpi-items', 42, '', '', 1100);
+
+            // Revenue: animate ₹8.5L
+            const revEl = document.getElementById('kpi-revenue');
+            const start = performance.now();
+            const revTarget = 850000;
+            function tickRev(now) {
+                const progress = Math.min((now - start) / 1200, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                const val = Math.floor(eased * revTarget);
+                revEl.textContent = '₹' + (val >= 100000 ? (val / 100000).toFixed(1) + 'L' : val.toLocaleString('en-IN'));
+                if (progress < 1) requestAnimationFrame(tickRev);
+                else revEl.textContent = '₹8.5L';
+            }
+            requestAnimationFrame(tickRev);
+
+            // Progress bars
+            animateProgressBar('pb-revenue', 85, 400);
+            animateProgressBar('pb-orders', 72, 500);
+            animateProgressBar('pb-aov', 68, 600);
+            animateProgressBar('pb-items', 88, 700);
+        }
+
+        /* ══ CHART HELPERS ═══════════════════════════════════════════ */
+        const chartDefaults = {
+            color: '#94a3b8',
+            font: { family: 'Inter', size: 11 }
+        };
+
+        Chart.defaults.color = chartDefaults.color;
+        Chart.defaults.font = chartDefaults.font;
+
+        /* ── Daily Sales Chart (line) ─────────────────────────────── */
+        let salesChart;
+
+        const salesData = {
+            '7d': {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                data: [32000, 48000, 42000, 61000, 75000, 105000, 95000]
+            },
+            '30d': {
+                labels: Array.from({ length: 30 }, (_, i) => `${i + 1}`),
+                data: Array.from({ length: 30 }, () => +(20000 + Math.random() * 100000).toFixed(0))
+            },
+            '90d': {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7', 'Week 8', 'Week 9', 'Week 10', 'Week 11', 'Week 12', 'Week 13'],
+                data: [280000, 320000, 350000, 380000, 420000, 450000, 480000, 520000, 550000, 580000, 620000, 650000, 680000]
+            }
+        };
+
+        function buildSalesChart(period = '7d') {
+            const ctx = document.getElementById('salesChart').getContext('2d');
+            const d = salesData[period];
+
+            const gradient = ctx.createLinearGradient(0, 0, 0, 250);
+            gradient.addColorStop(0, 'rgba(168,85,247,0.30)');
+            gradient.addColorStop(1, 'rgba(168,85,247,0.00)');
+
+            if (salesChart) salesChart.destroy();
+
+            salesChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: d.labels,
+                    datasets: [{
+                        label: 'Revenue (₹)',
+                        data: d.data,
+                        borderColor: '#a855f7',
+                        backgroundColor: gradient,
+                        borderWidth: 2.5,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#a855f7',
+                        pointBorderColor: '#0d0d18',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1e1b2e',
+                            borderColor: 'rgba(168,85,247,.35)',
+                            borderWidth: 1,
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#94a3b8',
+                            callbacks: {
+                                label: ctx => ` ₹${(ctx.parsed.y / 1000).toFixed(0)}K`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255,255,255,.05)' },
+                            ticks: { color: '#475569' }
+                        },
+                        y: {
+                            grid: { color: 'rgba(255,255,255,.05)' },
+                            ticks: {
+                                color: '#475569',
+                                callback: v => '₹' + (v / 1000).toFixed(0) + 'K'
+                            },
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+        }
+
+        function switchPeriod(btn, period) {
+            document.querySelectorAll('.ptab').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            buildSalesChart(period);
+        }
+
+        /* ── Top Selling Items Bar Chart ──────────────────────────── */
+        function buildTopItemsChart() {
+            const ctx = document.getElementById('topItemsChart').getContext('2d');
+
+            const gradient = ctx.createLinearGradient(0, 0, 0, 250);
+            gradient.addColorStop(0, 'rgba(249,115,22,0.85)');
+            gradient.addColorStop(1, 'rgba(168,85,247,0.40)');
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Butter Chicken', 'Biryani', 'Tandoori Naan', 'Tikka Masala', 'Paneer Butter'],
+                    datasets: [{
+                        label: 'Orders',
+                        data: [287, 245, 198, 156, 142],
+                        backgroundColor: [
+                            'rgba(249, 115, 22, 0.8)',
+                            'rgba(168, 85, 247, 0.8)',
+                            'rgba(34, 197, 94, 0.8)',
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(20, 184, 166, 0.8)'
+                        ],
+                        borderRadius: 6,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1e1b2e',
+                            borderColor: 'rgba(249,115,22,.35)',
+                            borderWidth: 1,
+                            titleColor: '#f1f5f9',
+                            bodyColor: '#94a3b8',
+                            callbacks: { label: ctx => ` ${ctx.parsed.x} orders` }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(255,255,255,.05)' },
+                            ticks: { color: '#475569' },
+                            beginAtZero: true
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { color: '#475569' }
+                        }
+                    }
+                }
+            });
+        }
+
+        /* ══ REFRESH ════════════════════════════════════════════════ */
+        function refreshData() {
+            const btn = event.currentTarget;
+            btn.style.animation = 'spin .7s linear infinite';
+            btn.disabled = true;
+            setTimeout(() => {
+                btn.style.animation = '';
+                btn.disabled = false;
+                loadKPIs();
+                buildSalesChart('7d');
+                document.querySelectorAll('.ptab').forEach((b, i) => b.classList.toggle('active', i === 0));
+            }, 1000);
+        }
+
+        /* ══ INIT ═══════════════════════════════════════════════════ */
+        document.addEventListener('DOMContentLoaded', () => {
+            loadKPIs();
+            buildSalesChart('7d');
+            buildTopItemsChart();
+            initSocket();
+        });
+
+        /* ══ LIVE COUNT STATE ════════════════════════════════════════ */
+        let liveOrders = 285;
+        let liveRevenue = 850000;
+
+        /* ══ SOCKET.IO — REAL-TIME ORDERS ═══════════════════════════ */
+        function initSocket() {
+            const socket = io('http://localhost:3000', { transports: ['websocket', 'polling'] });
+
+            socket.on('connect', () => {
+                console.log('🔌 Socket connected:', socket.id);
+                // Read restaurant info from localStorage (set on login)
+                const restaurantId = localStorage.getItem('restaurantId') || '1';
+                socket.emit('join', { role: 'restaurant_manager', restaurantId });
+            });
+
+            socket.on('new_order', (order) => {
+                console.log('📦 New order received:', order);
+                liveOrders += 1;
+                liveRevenue += parseFloat(order.totalPrice || 0);
+                updateLiveKPIs();
+                showOrderToast(order);
+                flashOrdersBadge();
+            });
+
+            socket.on('disconnect', () => console.log('❌ Socket disconnected'));
+        }
+
+        function updateLiveKPIs() {
+            // Orders counter
+            const ordEl = document.getElementById('kpi-orders');
+            if (ordEl) ordEl.textContent = liveOrders.toLocaleString('en-IN');
+
+            // Revenue label
+            const revEl = document.getElementById('kpi-revenue');
+            if (revEl) {
+                const v = liveRevenue;
+                revEl.textContent = v >= 100000
+                    ? '₹' + (v / 100000).toFixed(1) + 'L'
+                    : '₹' + v.toLocaleString('en-IN');
+            }
+        }
+
+        function flashOrdersBadge() {
+            // Add a pulsing badge to the Orders nav item
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                if (item.textContent.includes('Orders')) {
+                    let badge = item.querySelector('.live-badge');
+                    if (!badge) {
+                        badge = document.createElement('span');
+                        badge.className = 'live-badge';
+                        badge.style.cssText = `
+                            margin-left: auto;
+                            background: #ef4444;
+                            color: #fff;
+                            font-size: .6rem;
+                            font-weight: 700;
+                            padding: .15rem .4rem;
+                            border-radius: 99px;
+                            animation: pulse 1.5s infinite;
+                        `;
+                        item.appendChild(badge);
+                    }
+                    badge.textContent = 'NEW';
+                }
+            });
+        }
+
+        /* ══ TOAST NOTIFICATION ══════════════════════════════════════ */
+        function showOrderToast(order) {
+            // Container
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                container.style.cssText = `
+                    position: fixed;
+                    bottom: 1.5rem;
+                    right: 1.5rem;
+                    display: flex;
+                    flex-direction: column;
+                    gap: .6rem;
+                    z-index: 9999;
+                `;
+                document.body.appendChild(container);
+            }
+
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                background: linear-gradient(135deg, #1e1b2e, #0d0d18);
+                border: 1px solid rgba(168, 85, 247, .4);
+                border-left: 3px solid #a855f7;
+                border-radius: 12px;
+                padding: 1rem 1.25rem;
+                min-width: 280px;
+                max-width: 340px;
+                box-shadow: 0 8px 32px rgba(0,0,0,.55);
+                animation: slideToast .35s cubic-bezier(.34,1.56,.64,1) both;
+                display: flex;
+                align-items: flex-start;
+                gap: .75rem;
+                cursor: pointer;
+            `;
+            const price = parseFloat(order.totalPrice || 0).toLocaleString('en-IN');
+            toast.innerHTML = `
+                <div style="font-size:1.5rem;line-height:1">🆕</div>
+                <div>
+                    <div style="font-size:.85rem;font-weight:700;color:#f1f5f9;margin-bottom:.2rem">New Order Received!</div>
+                    <div style="font-size:.75rem;color:#94a3b8;">Order <strong style="color:#a855f7">#${order.orderId}</strong> · ₹${price}</div>
+                    <div style="font-size:.7rem;color:#475569;margin-top:.2rem">${order.deliveryType === 'home' ? '🏠 Delivery' : '🏪 Pickup'}</div>
+                </div>
+                <div style="margin-left:auto;font-size:.7rem;color:#475569;white-space:nowrap">${new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</div>
+            `;
+            toast.onclick = () => toast.remove();
+
+            // Slideout animation style
+            if (!document.getElementById('toast-keyframe-style')) {
+                const style = document.createElement('style');
+                style.id = 'toast-keyframe-style';
+                style.textContent = `
+                    @keyframes slideToast {
+                        from { opacity:0; transform: translateX(60px) scale(.95); }
+                        to   { opacity:1; transform: translateX(0) scale(1); }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            container.appendChild(toast);
+            // Auto-remove after 6s
+            setTimeout(() => toast.remove(), 6000);
+        }
+    </script>
+
+</body>
+
+</html>
