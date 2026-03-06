@@ -75,8 +75,8 @@ Before you begin, ensure you have the following installed:
 
 ### 1. **Clone the Repository**
 ```bash
-git clone https://github.com/yourusername/restaurant-ai-system.git
-cd restaurant-ai-system
+git clone https://github.com/24CS049Priyanshu/RestaurantAI.git
+cd RestaurantAI
 ```
 
 ### 2. **Database Setup**
@@ -397,7 +397,7 @@ This project is licensed under the ISC License - see the LICENSE file for detail
 
 ## 🏆 Acknowledgments
 
-- Built with ❤️ for the Nirma Hackathon
+- Built with ❤️ for RestaurantAI
 - Inspired by modern restaurant management solutions
 - Python based AI recommendations engine
 
