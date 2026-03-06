@@ -1,4 +1,3 @@
-# RestaurantAI
 # 🍽️ Restaurant AI Management System
 
 A full-stack, intelligent restaurant management platform with AI-powered features for pricing optimization, combo recommendations, and voice order processing. Built for restaurants of all sizes to streamline operations and enhance customer experience.
