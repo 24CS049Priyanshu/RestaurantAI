@@ -60,6 +60,7 @@
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -67,13 +68,25 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         @keyframes slideIn {
-            from { transform: translateY(-20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
         @keyframes scaleIn {
@@ -81,6 +94,7 @@
                 opacity: 0;
                 transform: scale(0.9);
             }
+
             to {
                 opacity: 1;
                 transform: scale(1);
@@ -88,8 +102,15 @@
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
         }
 
         /* ══════════════════════════════════════════
@@ -704,7 +725,10 @@
         }
 
         @media (max-width: 600px) {
-            section, .hero-banner, .navbar {
+
+            section,
+            .hero-banner,
+            .navbar {
                 padding: 1.5rem 1rem;
             }
 
@@ -756,7 +780,7 @@
                     🛒
                     <span class="cart-count" id="cartCount" style="display:none;">0</span>
                 </button>
-                <button class="btn-primary">Login</button>
+                <button class="btn-primary" onclick="window.location.href='customer-login.html'">Login</button>
             </div>
         </div>
     </header>

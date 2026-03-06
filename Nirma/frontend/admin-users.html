@@ -873,6 +873,7 @@
             color: var(--accent);
         }
     </style>
+<script src="nav.js"></script>
 </head>
 
 <body>
@@ -1194,14 +1195,38 @@
         }
 
         function navigate(page) {
-            if (page === 'dashboard') {
-                window.location.href = 'admin-dashboard.html';
+            const isLocalAdmin = window.location.pathname.includes('admin-');
+            const isAdminPath = window.location.pathname.includes('/admin/') || isLocalAdmin;
+
+            const routes = {
+                'dashboard': isAdminPath ? 'admin-dashboard.html' : 'restaurant-dashboard.html',
+                'restaurants': 'admin-restaurants.html',
+                'orders': isAdminPath ? 'admin-dashboard.html' : 'restaurant-orders.html',
+                'revenue': 'revenue-intelligence.html',
+                'insights': 'price-optimization.html',
+                'voice': 'voice-orders.html',
+                'combos': 'combo-recommendations.html',
+                'users': 'admin-users.html',
+                'settings': isAdminPath ? 'admin-settings.html' : 'restaurant-settings.html',
+                'menu': 'restaurant-menu.html',
+                'customers': 'restaurant-dashboard.html',
+                'reports': isAdminPath ? 'admin-settings.html' : 'restaurant-reports.html',
+                'profile': isAdminPath ? 'admin-settings.html' : 'restaurant-settings.html',
+                'support': isAdminPath ? 'admin-support.html' : 'restaurant-support.html'
+            };
+
+            const target = routes[page];
+            if (target && target !== '#') {
+                window.location.href = target;
+            } else {
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                try {
+                    if (typeof event !== 'undefined' && event && event.currentTarget) {
+                        event.currentTarget.classList.add('active');
+                    }
+                } catch(e) {}
+                console.log('Navigating to ' + page + '... (Fallback)');
             }
-            if (page === 'restaurants') {
-                window.location.href = 'admin-restaurants.html';
-            }
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            event.currentTarget.classList.add('active');
         }
 
         function logout() {

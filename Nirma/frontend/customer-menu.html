@@ -8,8 +8,7 @@
     <title>Menu - Spice Garden</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet" />
     <style>
         /* ── Reset ─────────────────────────────────────────────────── */
@@ -60,6 +59,7 @@
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -67,13 +67,25 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         @keyframes slideIn {
-            from { transform: translateY(-20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
         /* ══════════════════════════════════════════
@@ -651,9 +663,17 @@
         <p class="page-subtitle">Browse our full selection of authentic Indian dishes</p>
 
         <!-- Search & Filter -->
-        <div class="search-filter-bar">
-            <input type="text" class="search-input" id="searchInput" placeholder="Search menu items..." onkeyup="filterMenu()">
-            <div class="category-filter" id="categoryFilter">
+        <div class="search-filter-bar" style="align-items: center;">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search menu items..."
+                onkeyup="filterMenu()">
+            <button id="voiceBtn" onclick="toggleVoiceRecording()" title="Order by Voice"
+                style="background: linear-gradient(135deg, var(--accent-dark), var(--accent)); color: white; border: none; border-radius: 50%; width: 45px; height: 45px; font-size: 1.2rem; cursor: pointer; flex-shrink: 0; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4); display: flex; align-items: center; justify-content: center; transition: all 0.3s;">
+                🎙️
+            </button>
+            <div id="voiceStatus"
+                style="font-size: 0.85rem; color: var(--accent); display: none; margin-right: auto; font-weight: 500;">
+                Listening...</div>
+            <div class="category-filter" id="categoryFilter" style="margin-left: auto;">
                 <!-- Filled by JavaScript -->
             </div>
         </div>
@@ -677,7 +697,7 @@
         <button class="modal-close" onclick="closeModal()">✕</button>
         <h2 class="modal-title" id="modalItemName"></h2>
         <p class="modal-desc" id="modalItemDesc"></p>
-        
+
         <div class="quantity-control">
             <button class="qty-btn" onclick="decreaseQty()">−</button>
             <div class="qty-display" id="qtyDisplay">1</div>
@@ -706,35 +726,35 @@
             { id: 3, name: 'Paneer Butter Masala', price: 260, desc: 'Cottage cheese in velvety tomato cream', icon: '🧀', category: 'Curries', image: 'https://images.unsplash.com/photo-1585932201528-faf4873fcd0e?w=400&h=300&fit=crop' },
             { id: 4, name: 'Tandoori Chicken', price: 260, desc: 'Marinated and grilled to perfection', icon: '🍖', category: 'Curries', image: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=400&h=300&fit=crop' },
             { id: 5, name: 'Rogan Josh', price: 280, desc: 'Aromatic lamb curry with warm spices', icon: '🍖', category: 'Curries', image: 'https://images.unsplash.com/photo-1601757228600-1d3c2a3a3a3f?w=400&h=300&fit=crop' },
-            
+
             // Breads
             { id: 6, name: 'Naan', price: 80, desc: 'Freshly baked Indian flatbread', icon: '🍞', category: 'Breads', image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=400&h=300&fit=crop' },
             { id: 7, name: 'Garlic Naan', price: 100, desc: 'Naan infused with aromatic garlic', icon: '🌾', category: 'Breads', image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=400&h=300&fit=crop' },
             { id: 8, name: 'Puri', price: 60, desc: 'Deep-fried puffed Indian bread', icon: '🥟', category: 'Breads', image: 'https://images.unsplash.com/photo-1585937421612-70a19fb6ff86?w=400&h=300&fit=crop' },
             { id: 9, name: 'Roti', price: 50, desc: 'Traditional wheat flatbread', icon: '🥐', category: 'Breads', image: 'https://images.unsplash.com/photo-1585937421612-70a19fb6ff86?w=400&h=300&fit=crop' },
             { id: 10, name: 'Paratha', price: 90, desc: 'Layered stuffed flatbread', icon: '🥠', category: 'Breads', image: 'https://images.unsplash.com/photo-1585937421612-70a19fb6ff86?w=400&h=300&fit=crop' },
-            
+
             // Rice Dishes
             { id: 11, name: 'Biryani', price: 250, desc: 'Fragrant basmati rice with spiced meat', icon: '🍚', category: 'Rice', image: 'https://images.unsplash.com/photo-1584193991496-1e6e88205b34?w=400&h=300&fit=crop' },
             { id: 12, name: 'Vegetable Biryani', price: 220, desc: 'Rice with fresh vegetables and spices', icon: '🥘', category: 'Rice', image: 'https://images.unsplash.com/photo-1584193991496-1e6e88205b34?w=400&h=300&fit=crop' },
             { id: 13, name: 'Chicken Fried Rice', price: 200, desc: 'Indo-Chinese fusion fried rice', icon: '🍲', category: 'Rice', image: 'https://images.unsplash.com/photo-1605870445919-838d190e8e4b?w=400&h=300&fit=crop' },
-            
+
             // Appetizers
             { id: 14, name: 'Samosa', price: 60, desc: 'Crispy pastry with spiced potato filling', icon: '📦', category: 'Appetizers', image: 'https://images.unsplash.com/photo-1599043513921-fc6752f59ee0?w=400&h=300&fit=crop' },
             { id: 15, name: 'Paneer Tikka', price: 220, desc: 'Grilled cottage cheese cubes with spices', icon: '🍢', category: 'Appetizers', image: 'https://images.unsplash.com/photo-1599043513921-fc6752f59ee0?w=400&h=300&fit=crop' },
             { id: 16, name: 'Chicken 65', price: 240, desc: 'Spicy fried chicken bites', icon: '🍗', category: 'Appetizers', image: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=400&h=300&fit=crop' },
             { id: 17, name: 'Pakora', price: 100, desc: 'Fritters of vegetables in gram flour batter', icon: '🍪', category: 'Appetizers', image: 'https://images.unsplash.com/photo-1599043513921-fc6752f59ee0?w=400&h=300&fit=crop' },
-            
+
             // Desserts
             { id: 18, name: 'Gulab Jamun', price: 120, desc: 'Sweet milk dumplings in sugar syrup', icon: '🍡', category: 'Desserts', image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=300&fit=crop' },
             { id: 19, name: 'Rasgulla', price: 100, desc: 'Soft cheese balls in light sugar syrup', icon: '🎂', category: 'Desserts', image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=300&fit=crop' },
             { id: 20, name: 'Kheer', price: 80, desc: 'Creamy rice pudding with cardamom', icon: '🍮', category: 'Desserts', image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=300&fit=crop' },
-            
+
             // Beverages
             { id: 21, name: 'Mango Lassi', price: 90, desc: 'Refreshing yogurt drink with mango pulp', icon: '🥤', category: 'Beverages' },
             { id: 22, name: 'Chai', price: 40, desc: 'Traditional Indian spiced tea', icon: '☕', category: 'Beverages' },
             { id: 23, name: 'Masala Lassi', price: 80, desc: 'Yogurt drink with spiced masala blend', icon: '🍶', category: 'Beverages' },
-            
+
             // Sides
             { id: 24, name: 'Raita', price: 50, desc: 'Yogurt with cucumber and spices', icon: '🥒', category: 'Sides' },
             { id: 25, name: 'Papad', price: 40, desc: 'Crispy lentil wafer', icon: '💿', category: 'Sides' },
@@ -768,8 +788,8 @@
             // Filter by search
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             if (searchTerm) {
-                items = items.filter(item => 
-                    item.name.toLowerCase().includes(searchTerm) || 
+                items = items.filter(item =>
+                    item.name.toLowerCase().includes(searchTerm) ||
                     item.desc.toLowerCase().includes(searchTerm)
                 );
             }
@@ -880,6 +900,100 @@
 
         function goToCart() {
             window.location.href = 'customer-cart.html';
+        }
+
+        // ═══ VOICE ORDERING (WEB SPEECH API) ════════════════════════
+        let isRecording = false;
+        let recognition = null;
+
+        function initVoiceRecognition() {
+            if ('webkitSpeechRecognition' in window) {
+                recognition = new webkitSpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = 'en-US';
+
+                recognition.onstart = function () {
+                    document.getElementById('voiceBtn').style.animation = 'pulse 1s infinite';
+                    document.getElementById('voiceStatus').style.display = 'block';
+                    isRecording = true;
+                };
+
+                recognition.onresult = function (event) {
+                    const transcript = event.results[0][0].transcript;
+                    document.getElementById('voiceStatus').textContent = `Heard: "${transcript}"`;
+                    processVoiceCommand(transcript);
+                };
+
+                recognition.onerror = function (event) {
+                    console.error('Speech recognition error', event.error);
+                    stopVoiceRecording();
+                    alert('Could not recognize voice. Please try again.');
+                };
+
+                recognition.onend = function () {
+                    stopVoiceRecording();
+                };
+            } else {
+                alert("Your browser doesn't support Voice Recognition. Please use Chrome.");
+            }
+        }
+
+        function toggleVoiceRecording() {
+            if (!recognition) initVoiceRecognition();
+
+            if (isRecording) {
+                recognition.stop();
+            } else {
+                document.getElementById('voiceStatus').textContent = 'Listening...';
+                recognition.start();
+            }
+        }
+
+        function stopVoiceRecording() {
+            isRecording = false;
+            document.getElementById('voiceBtn').style.animation = 'none';
+            setTimeout(() => { document.getElementById('voiceStatus').style.display = 'none'; }, 2000);
+        }
+
+        async function processVoiceCommand(transcription) {
+            try {
+                // Mock Restaurant ID for demo purposes
+                const res = await fetch('/api/voice/process', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ transcription, restaurant_id: 1 }) // Using Restaurant ID 1 (Tech Bistro)
+                });
+                const data = await res.json();
+
+                if (data.success && data.parsedOrder.items.length > 0) {
+                    // Add items to cart
+                    let addedNames = [];
+                    data.parsedOrder.items.forEach(item => {
+                        const existingItem = cart.find(c => c.id === item.menu_item_id);
+                        if (existingItem) {
+                            existingItem.quantity += item.quantity;
+                        } else {
+                            cart.push({
+                                id: item.menu_item_id,
+                                name: item.name,
+                                price: parseFloat(item.price),
+                                quantity: item.quantity
+                            });
+                        }
+                        addedNames.push(`${item.quantity}x ${item.name}`);
+                    });
+
+                    localStorage.setItem('cart', JSON.stringify(cart));
+                    updateCartCount();
+                    alert(`Voice order parsed! Added to cart:\n${addedNames.join('\\n')}`);
+                } else {
+                    alert('Could not find those items on the menu. Try speaking clearer or use the buttons.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Server error while parsing voice command.');
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {

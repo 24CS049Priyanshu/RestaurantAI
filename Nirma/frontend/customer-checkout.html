@@ -8,8 +8,7 @@
     <title>Checkout - Spice Garden</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet" />
     <style>
         /* ── Reset ─────────────────────────────────────────────────── */
@@ -58,6 +57,7 @@
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -65,18 +65,37 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         @keyframes slideIn {
-            from { transform: translateY(-20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
         }
 
         /* ══════════════════════════════════════════
@@ -368,7 +387,7 @@
             text-align: center;
         }
 
-        .radio-option input:checked + .radio-label {
+        .radio-option input:checked+.radio-label {
             background: rgba(168, 85, 247, .2);
             border-color: var(--accent);
             color: var(--accent);
@@ -679,9 +698,9 @@
             </a>
 
             <div class="breadcrumb">
-                <a href="customer-home.html">Home</a> > 
-                <a href="customer-menu.html">Menu</a> > 
-                <a href="customer-cart.html">Cart</a> > 
+                <a href="customer-home.html">Home</a> >
+                <a href="customer-menu.html">Menu</a> >
+                <a href="customer-cart.html">Cart</a> >
                 <span style="color: var(--accent);">Checkout</span>
             </div>
         </div>
@@ -716,8 +735,11 @@
         <div id="emptyCheckout" style="display:none; text-align: center; padding: 4rem 2rem;">
             <div style="font-size: 4rem; margin-bottom: 1rem;">🛒</div>
             <h2 style="font-size: 1.3rem; font-weight: 700; margin-bottom: .5rem;">Your cart is empty</h2>
-            <p style="color: var(--muted); font-size: .95rem; margin-bottom: 2rem;">Add items to your cart before checkout</p>
-            <button style="padding: .75rem 1.5rem; border-radius: 10px; border: none; background: linear-gradient(135deg, var(--accent-dark), var(--accent)); color: white; font-size: .9rem; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif;" onclick="window.location.href='customer-menu.html'">Browse Menu</button>
+            <p style="color: var(--muted); font-size: .95rem; margin-bottom: 2rem;">Add items to your cart before
+                checkout</p>
+            <button
+                style="padding: .75rem 1.5rem; border-radius: 10px; border: none; background: linear-gradient(135deg, var(--accent-dark), var(--accent)); color: white; font-size: .9rem; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif;"
+                onclick="window.location.href='customer-menu.html'">Browse Menu</button>
         </div>
     </div>
 
@@ -727,7 +749,7 @@
         <div class="success-icon">✓</div>
         <h2 class="modal-title">Order Placed Successfully!</h2>
         <p class="modal-text">Thank you for your order. Your delicious food will be delivered soon.</p>
-        
+
         <div class="order-id" id="modalOrderId">#ORDER-000000</div>
         <div class="delivery-time">🚚 Estimated Delivery: 30-45 minutes</div>
 
@@ -895,7 +917,7 @@
             formData.deliveryType = type;
             const addressGroup = document.getElementById('addressGroup');
             const addressInput = document.getElementById('addressInput');
-            
+
             if (type === 'pickup') {
                 // Hide address field for pickup
                 addressGroup.style.display = 'none';
@@ -1023,9 +1045,17 @@
                 document.getElementById('backdrop').classList.add('active');
                 document.getElementById('successModal').classList.add('active');
 
+                // Store order id for tracking page
+                localStorage.setItem('lastOrderId', orderId);
+
                 btn.disabled = false;
                 btn.classList.remove('processing');
                 btn.innerHTML = '<span>🛒 Place Order</span>';
+
+                // Auto-redirect to tracking page after 5 seconds
+                setTimeout(() => {
+                    window.location.href = 'customer-order-tracking.html';
+                }, 5000);
             }, 2000);
         }
 
@@ -1034,7 +1064,7 @@
         }
 
         function trackOrder() {
-            alert('Order tracking feature coming soon!\nCheck your email for order updates.');
+            window.location.href = 'customer-order-tracking.html';
         }
 
         document.addEventListener('DOMContentLoaded', () => {

@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reports & Analytics — RestaurantAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        :root {
+            --sidebar-w: 250px;
+            --topbar-h: 64px;
+            --bg: #0a0a0f;
+            --bg-card: rgba(255, 255, 255, 0.04);
+            --sidebar-bg: #0d0d18;
+            --topbar-bg: rgba(13, 13, 24, 0.85);
+            --border: rgba(255, 255, 255, 0.07);
+            --text: #f1f5f9;
+            --muted: #94a3b8;
+            --accent: #a855f7;
+            --accent-dark: #7c3aed;
+            --accent-glow: rgba(168, 85, 247, 0.25);
+            --green: #22c55e;
+            --orange: #f97316;
+            --red: #ef4444;
+            --blue: #3b82f6;
+            --radius: 14px
+        }
+
+        html {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            margin: 0
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -200px 0
+            }
+
+            100% {
+                background-position: 200px 0
+            }
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: var(--sidebar-w);
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 100
+        }
+
+        .sidebar-header {
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: .85rem;
+            border-bottom: 1px solid var(--border)
+        }
+
+        .sidebar-logo-icon {
+            font-size: 1.8rem;
+            flex-shrink: 0
+        }
+
+        .sidebar-brand .name {
+            font-size: .85rem;
+            font-weight: 700;
+            color: var(--text)
+        }
+
+        .sidebar-brand .sub {
+            font-size: .65rem;
+            color: var(--muted);
+            margin-top: 2px
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 0
+        }
+
+        .nav-section-label {
+            font-size: .65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: #475569;
+            padding: .75rem 1.25rem;
+            margin-top: .5rem
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            padding: .7rem 1.25rem;
+            margin: .25rem .6rem;
+            border-radius: 9px;
+            cursor: pointer;
+            transition: all .2s;
+            color: var(--muted);
+            font-size: .85rem
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, .06);
+            color: var(--text)
+        }
+
+        .nav-item.active {
+            background: rgba(168, 85, 247, .15);
+            color: var(--accent);
+            font-weight: 600
+        }
+
+        .nav-icon {
+            font-size: 1.1rem;
+            flex-shrink: 0
+        }
+
+        .nav-label {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .sidebar-footer {
+            padding: 1.25rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: .75rem
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .9rem;
+            flex-shrink: 0
+        }
+
+        .avatar-info .uname {
+            font-size: .75rem;
+            font-weight: 600;
+            color: var(--text)
+        }
+
+        .avatar-info .urole {
+            font-size: .65rem;
+            color: var(--muted);
+            margin-top: 1px
+        }
+
+        /* TOPBAR */
+        .topbar {
+            position: fixed;
+            top: 0;
+            left: var(--sidebar-w);
+            right: 0;
+            height: var(--topbar-h);
+            background: var(--topbar-bg);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.75rem;
+            z-index: 99;
+            backdrop-filter: blur(10px)
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: .75rem
+        }
+
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            font-size: .95rem;
+            cursor: pointer;
+            transition: all .2s
+        }
+
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, .1);
+            color: var(--text)
+        }
+
+        .topbar-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .85rem;
+            cursor: pointer;
+            border: 2px solid rgba(168, 85, 247, .3)
+        }
+
+        .page-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text)
+        }
+
+        .page-breadcrumb {
+            font-size: .72rem;
+            color: var(--muted)
+        }
+
+        /* MAIN */
+        .main-wrap {
+            margin-left: var(--sidebar-w)
+        }
+
+        .main-content {
+            padding: calc(var(--topbar-h) + 1.75rem) 1.75rem 2rem;
+            min-height: 100vh
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.75rem;
+            animation: fadeUp .5s ease both
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 700
+        }
+
+        /* STATS GRID */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+            animation: fadeUp .5s ease both
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem
+        }
+
+        .stat-label {
+            font-size: .75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: #475569;
+            margin-bottom: .5rem
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text)
+        }
+
+        .stat-sub {
+            font-size: .75rem;
+            color: var(--muted);
+            margin-top: .25rem
+        }
+
+        .stat-up {
+            color: var(--green)
+        }
+
+        .stat-down {
+            color: var(--red)
+        }
+
+        /* CHART AREA */
+        .chart-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1.25rem;
+            animation: fadeUp .5s ease both
+        }
+
+        .chart-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between
+        }
+
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: .5rem;
+            height: 160px;
+            padding-bottom: .5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, .06)
+        }
+
+        .bar-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            gap: .35rem
+        }
+
+        .bar {
+            width: 100%;
+            border-radius: 6px 6px 0 0;
+            transition: opacity .2s
+        }
+
+        .bar:hover {
+            opacity: .75
+        }
+
+        .bar-label {
+            font-size: .6rem;
+            color: var(--muted);
+            white-space: nowrap
+        }
+
+        .two-cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            margin-bottom: 1.25rem
+        }
+
+        @media(max-width:900px) {
+            .two-cols {
+                grid-template-columns: 1fr
+            }
+        }
+
+        /* TABLE */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .85rem
+        }
+
+        .data-table th {
+            font-size: .72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: #475569;
+            padding: .85rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border)
+        }
+
+        .data-table td {
+            padding: 1rem;
+            color: var(--muted);
+            border-bottom: 1px solid rgba(255, 255, 255, .03)
+        }
+
+        .data-table tbody tr:hover {
+            background: rgba(255, 255, 255, .02)
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: .7rem;
+            font-weight: 700;
+            padding: .2rem .6rem;
+            border-radius: 6px
+        }
+
+        .tag-star {
+            background: rgba(168, 85, 247, .12);
+            color: var(--accent);
+            border: 1px solid rgba(168, 85, 247, .2)
+        }
+
+        .tag-plough {
+            background: rgba(34, 197, 94, .12);
+            color: var(--green);
+            border: 1px solid rgba(34, 197, 94, .2)
+        }
+
+        .tag-puzzle {
+            background: rgba(249, 115, 22, .12);
+            color: var(--orange);
+            border: 1px solid rgba(249, 115, 22, .2)
+        }
+
+        .tag-dog {
+            background: rgba(239, 68, 68, .12);
+            color: var(--red);
+            border: 1px solid rgba(239, 68, 68, .2)
+        }
+    </style>
+<script src="nav.js"></script>
+</head>
+
+<body>
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar" role="navigation">
+        <div class="sidebar-header">
+            <div class="sidebar-logo-icon">🍜</div>
+            <div class="sidebar-brand">
+                <div class="name">Spice Garden</div>
+                <div class="sub">Reports & Analytics</div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Menu</div>
+            <div class="nav-item" onclick="navigate('dashboard')"><span class="nav-icon">📊</span><span
+                    class="nav-label">Dashboard</span></div>
+            <div class="nav-item" onclick="navigate('orders')"><span class="nav-icon">📋</span><span
+                    class="nav-label">Orders</span></div>
+            <div class="nav-item" onclick="navigate('menu')"><span class="nav-icon">🍱</span><span
+                    class="nav-label">Menu Items</span></div>
+            <div class="nav-item" onclick="navigate('customers')"><span class="nav-icon">👥</span><span
+                    class="nav-label">Customers</span></div>
+            <div class="nav-item active" onclick="navigate('reports')"><span class="nav-icon">📈</span><span
+                    class="nav-label">Reports</span></div>
+            <div class="nav-section-label">Settings</div>
+            <div class="nav-item" onclick="navigate('settings')"><span class="nav-icon">⚙️</span><span
+                    class="nav-label">Settings</span></div>
+            <div class="nav-item" onclick="navigate('support')"><span class="nav-icon">💬</span><span
+                    class="nav-label">Support</span></div>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="avatar">👨‍🍳</div>
+            <div class="avatar-info">
+                <div class="uname">Rajesh Kumar</div>
+                <div class="urole">Owner</div>
+            </div>
+        </div>
+    </aside>
+
+    <div class="main-wrap">
+        <header class="topbar">
+            <div>
+                <div class="page-title">Reports & Analytics</div>
+                <div class="page-breadcrumb">Spice Garden › Reports</div>
+            </div>
+            <div class="topbar-right">
+                <button class="icon-btn" title="Logout" onclick="logout()">🚪</button>
+                <div class="topbar-avatar">👨‍🍳</div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="section-header">
+                <h1 class="section-title">📊 Analytics Overview</h1>
+                <span style="font-size:.85rem;color:var(--muted);">Last 30 days</span>
+            </div>
+
+            <!-- KPI Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Revenue</div>
+                    <div class="stat-value">₹2.4L</div>
+                    <div class="stat-sub stat-up">↑ 18% vs last month</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Orders</div>
+                    <div class="stat-value">842</div>
+                    <div class="stat-sub stat-up">↑ 12% vs last month</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Avg Order Value</div>
+                    <div class="stat-value">₹285</div>
+                    <div class="stat-sub stat-up">↑ 5% vs last month</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">New Customers</div>
+                    <div class="stat-value">134</div>
+                    <div class="stat-sub stat-down">↓ 3% vs last month</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Repeat Rate</div>
+                    <div class="stat-value">64%</div>
+                    <div class="stat-sub stat-up">↑ 8% vs last month</div>
+                </div>
+            </div>
+
+            <!-- Revenue Bar Chart (CSS) -->
+            <div class="chart-card">
+                <div class="chart-title">📈 Weekly Revenue</div>
+                <div class="bar-chart" id="barChart"></div>
+            </div>
+
+            <div class="two-cols">
+                <!-- Top Items -->
+                <div class="chart-card" style="margin-bottom:0">
+                    <div class="chart-title">🏆 Top Selling Items</div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Orders</th>
+                                <th>Revenue</th>
+                                <th>Class</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topItemsBody"></tbody>
+                    </table>
+                </div>
+                <!-- Category Split -->
+                <div class="chart-card" style="margin-bottom:0">
+                    <div class="chart-title">🍱 Category Breakdown</div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Orders</th>
+                                <th>%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Main Course</td>
+                                <td>321</td>
+                                <td>38%</td>
+                            </tr>
+                            <tr>
+                                <td>Breads</td>
+                                <td>218</td>
+                                <td>26%</td>
+                            </tr>
+                            <tr>
+                                <td>Rice/Biryani</td>
+                                <td>152</td>
+                                <td>18%</td>
+                            </tr>
+                            <tr>
+                                <td>Starters</td>
+                                <td>91</td>
+                                <td>11%</td>
+                            </tr>
+                            <tr>
+                                <td>Desserts</td>
+                                <td>60</td>
+                                <td>7%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        "use strict";
+        // Render bar chart
+        const weeks = [
+            { label: 'Week 1', rev: 54000 },
+            { label: 'Week 2', rev: 71000 },
+            { label: 'Week 3', rev: 63000 },
+            { label: 'Week 4', rev: 52000 },
+            { label: 'This Wk', rev: 78000 }
+        ];
+        const maxRev = Math.max(...weeks.map(w => w.rev));
+        const barChart = document.getElementById('barChart');
+        const colors = ['#a855f7', '#7c3aed', '#a855f7', '#7c3aed', '#22c55e'];
+        barChart.innerHTML = weeks.map((w, i) => {
+            const pct = Math.round((w.rev / maxRev) * 100);
+            return `<div class="bar-col">
+                <div class="bar" style="height:${pct}%;background:${colors[i]};opacity:0.85;" title="₹${w.rev.toLocaleString('en-IN')}"></div>
+                <div class="bar-label">${w.label}</div>
+            </div>`;
+        }).join('');
+
+        // Top items table
+        const topItems = [
+            { name: 'Butter Chicken', orders: 142, rev: '₹39,760', cls: 'star' },
+            { name: 'Biryani', orders: 118, rev: '₹29,500', cls: 'star' },
+            { name: 'Paneer Tikka', orders: 95, rev: '₹20,900', cls: 'plough' },
+            { name: 'Garlic Naan', orders: 88, rev: '₹8,800', cls: 'plough' },
+            { name: 'Chicken 65', orders: 61, rev: '₹14,640', cls: 'puzzle' },
+            { name: 'Kheer', orders: 22, rev: '₹1,760', cls: 'dog' },
+        ];
+        const clsLabels = { star: '⭐ Star', plough: '🐴 Plow Horse', puzzle: '🧩 Puzzle', dog: '🐕 Dog' };
+        document.getElementById('topItemsBody').innerHTML = topItems.map(i =>
+            `<tr>
+                <td style="color:var(--text);font-weight:600;">${i.name}</td>
+                <td>${i.orders}</td>
+                <td style="color:var(--green);">${i.rev}</td>
+                <td><span class="tag tag-${i.cls}">${clsLabels[i.cls]}</span></td>
+            </tr>`
+        ).join('');
+
+        function navigate(page) {
+            const isLocalAdmin = window.location.pathname.includes('admin-');
+            const isAdminPath = window.location.pathname.includes('/admin/') || isLocalAdmin;
+
+            const routes = {
+                'dashboard': isAdminPath ? 'admin-dashboard.html' : 'restaurant-dashboard.html',
+                'restaurants': 'admin-restaurants.html',
+                'orders': isAdminPath ? 'admin-dashboard.html' : 'restaurant-orders.html',
+                'revenue': 'revenue-intelligence.html',
+                'insights': 'price-optimization.html',
+                'voice': 'voice-orders.html',
+                'combos': 'combo-recommendations.html',
+                'users': 'admin-users.html',
+                'settings': isAdminPath ? 'admin-settings.html' : 'restaurant-settings.html',
+                'menu': 'restaurant-menu.html',
+                'customers': 'restaurant-dashboard.html',
+                'reports': isAdminPath ? 'admin-settings.html' : 'restaurant-reports.html',
+                'profile': isAdminPath ? 'admin-settings.html' : 'restaurant-settings.html',
+                'support': isAdminPath ? 'admin-support.html' : 'restaurant-support.html'
+            };
+
+            const target = routes[page];
+            if (target && target !== '#') {
+                window.location.href = target;
+            } else {
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                try {
+                    if (typeof event !== 'undefined' && event && event.currentTarget) {
+                        event.currentTarget.classList.add('active');
+                    }
+                } catch(e) {}
+                console.log('Navigating to ' + page + '... (Fallback)');
+            }
+        }
+
+        function logout() {
+            if (confirm('Log out?')) window.location.href = 'restaurant-login.html';
+        }
+    </script>
+</body>
+
+</html>

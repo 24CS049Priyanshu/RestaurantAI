@@ -313,6 +313,30 @@ router.put('/:id/status', verifyToken, verifyRole(['restaurant_manager']), async
             data: result.rows[0]
         });
 
+        // ── Real-time broadcast to dashboards ──────────────────────────
+        try {
+            const io = getIO();
+            if (io) {
+                const payload = {
+                    orderId: id,
+                    restaurantId: req.user.restaurantId,
+                    status: status,
+                    updatedAt: result.rows[0].updated_at
+                };
+
+                // Notify admin and restaurant manager
+                io.to('admin-room').emit('order_status_updated', payload);
+                io.to(`restaurant-${req.user.restaurantId}-room`).emit('order_status_updated', payload);
+
+                // Notify the specific customer
+                io.to(`customer-${result.rows[0].customer_id}-room`).emit('order_status_updated', payload);
+
+                console.log(`📡 Broadcasted status update for #${id} to ${status}`);
+            }
+        } catch (broadcastErr) {
+            console.error('Socket broadcast error:', broadcastErr.message);
+        }
+
     } catch (error) {
         console.error('Error updating order status:', error);
         res.status(500).json({

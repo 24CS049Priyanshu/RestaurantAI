@@ -67,6 +67,7 @@
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -74,17 +75,31 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         @keyframes slideIn {
-            from { transform: translateY(-20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         /* ══════════════════════════════════════════
@@ -881,6 +896,7 @@
             font-size: .9rem;
         }
     </style>
+    <script src="nav.js"></script>
 </head>
 
 <body>
@@ -963,8 +979,8 @@
             <div class="topbar-right">
                 <div class="search-bar">
                     <span style="color:var(--muted)">🔍</span>
-                    <input type="text" id="searchOrdersInput" placeholder="Search order ID or customer…" aria-label="Search" 
-                        onkeyup="filterOrders()" />
+                    <input type="text" id="searchOrdersInput" placeholder="Search order ID or customer…"
+                        aria-label="Search" onkeyup="filterOrders()" />
                 </div>
                 <button class="icon-btn" aria-label="Refresh" onclick="refreshTable()">🔄</button>
                 <button class="icon-btn" aria-label="Logout" onclick="logout()">🚪</button>
@@ -983,8 +999,8 @@
 
             <!-- Filter bar -->
             <div class="filter-bar">
-                <input type="text" class="form-input" placeholder="Search by order ID or customer…" 
-                    id="searchInput" onkeyup="filterOrders()" />
+                <input type="text" class="form-input" placeholder="Search by order ID or customer…" id="searchInput"
+                    onkeyup="filterOrders()" />
                 <select class="filter-select" id="statusFilter" onchange="filterOrders()">
                     <option value="">All Status</option>
                     <option value="pending">Pending</option>
@@ -1055,7 +1071,8 @@
             <div class="modal-body">
                 <div class="form-group">
                     <label class="form-label">Order ID</label>
-                    <div style="padding: .7rem .85rem; background: rgba(255, 255, 255, .02); border: 1px solid var(--border); border-radius: 8px; color: var(--text);" id="statusOrderId"></div>
+                    <div style="padding: .7rem .85rem; background: rgba(255, 255, 255, .02); border: 1px solid var(--border); border-radius: 8px; color: var(--text);"
+                        id="statusOrderId"></div>
                 </div>
 
                 <div class="form-group">
@@ -1071,7 +1088,8 @@
 
                 <div class="form-group">
                     <label class="form-label" for="statusNotes">Notes (optional)</label>
-                    <textarea id="statusNotes" class="form-input" placeholder="Add notes about this order…" style="min-height: 80px; resize: vertical;"></textarea>
+                    <textarea id="statusNotes" class="form-input" placeholder="Add notes about this order…"
+                        style="min-height: 80px; resize: vertical;"></textarea>
                 </div>
             </div>
 
@@ -1271,7 +1289,7 @@
             const statusVal = document.getElementById('statusFilter').value;
 
             const filtered = orders.filter(order => {
-                const matchSearch = !searchVal || 
+                const matchSearch = !searchVal ||
                     order.id.toLowerCase().includes(searchVal) ||
                     order.customer.toLowerCase().includes(searchVal);
 
@@ -1311,68 +1329,87 @@
         </tr>
       `).join('');
 
-        // ═══ UI CONTROL ════════════════════════════════════════
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('collapsed');
-        }
-
-        function navigate(page) {
-            if (page === 'dashboard') {
-                window.location.href = 'restaurant-dashboard.html';
+            // ═══ UI CONTROL ════════════════════════════════════════
+            function toggleSidebar() {
+                document.getElementById('sidebar').classList.toggle('collapsed');
             }
-            if (page === 'menu') {
-                window.location.href = 'restaurant-menu.html';
-            }
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-            console.log(`Navigating to ${page}...`);
-        }
 
-        function logout() {
-            if (confirm('Log out?')) {
-                window.location.href = 'restaurant-login.html';
-            }
-        }
+            function navigate(page) {
+                const isLocalAdmin = window.location.pathname.includes('admin-');
+                const isAdminPath = window.location.pathname.includes('/admin/') || isLocalAdmin;
 
-        function refreshTable() {
-            const btn = event.currentTarget;
-            btn.style.animation = 'spin .7s linear infinite';
-            btn.disabled = true;
-            setTimeout(() => {
-                btn.style.animation = '';
-                btn.disabled = false;
-                renderTable();
-            }, 800);
-        }
+                const routes = {
+                    'dashboard': isAdminPath ? 'admin-dashboard.html' : 'restaurant-dashboard.html',
+                    'restaurants': 'admin-restaurants.html',
+                    'orders': isAdminPath ? 'admin-dashboard.html' : 'restaurant-orders.html',
+                    'revenue': 'revenue-intelligence.html',
+                    'insights': 'price-optimization.html',
+                    'voice': 'voice-orders.html',
+                    'combos': 'combo-recommendations.html',
+                    'users': 'admin-users.html',
+                    'settings': isAdminPath ? 'admin-settings.html' : 'restaurant-settings.html',
+                    'menu': 'restaurant-menu.html',
+                    'customers': 'restaurant-dashboard.html',
+                    'reports': isAdminPath ? 'admin-settings.html' : 'restaurant-reports.html',
+                    'profile': isAdminPath ? 'admin-settings.html' : 'restaurant-settings.html',
+                    'support': isAdminPath ? 'admin-support.html' : 'restaurant-support.html'
+                };
 
-        // ═══ UTILITIES ═════════════════════════════════════════
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function showNotification(message, type = 'info') {
-            console.log(`[${type.toUpperCase()}] ${message}`);
-        }
-
-        // ═══ INIT ══════════════════════════════════════════════
-        document.addEventListener('DOMContentLoaded', () => {
-            renderTable();
-            // Close modal on Escape key
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    closeDetailsModal();
-                    closeStatusModal();
+                const target = routes[page];
+                if (target && target !== '#') {
+                    window.location.href = target;
+                } else {
+                    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                    try {
+                        if (typeof event !== 'undefined' && event && event.currentTarget) {
+                            event.currentTarget.classList.add('active');
+                        }
+                    } catch (e) { }
+                    console.log('Navigating to ' + page + '... (Fallback)');
                 }
+            }
+
+            function logout() {
+                if (confirm('Log out?')) {
+                    window.location.href = 'restaurant-login.html';
+                }
+            }
+
+            function refreshTable() {
+                const btn = event.currentTarget;
+                btn.style.animation = 'spin .7s linear infinite';
+                btn.disabled = true;
+                setTimeout(() => {
+                    btn.style.animation = '';
+                    btn.disabled = false;
+                    renderTable();
+                }, 800);
+            }
+
+            // ═══ UTILITIES ═════════════════════════════════════════
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            function showNotification(message, type = 'info') {
+                console.log(`[${type.toUpperCase()}] ${message}`);
+            }
+
+            // ═══ INIT ══════════════════════════════════════════════
+            document.addEventListener('DOMContentLoaded', () => {
+                renderTable();
+                // Close modal on Escape key
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        closeDetailsModal();
+                        closeStatusModal();
+                    }
+                });
             });
-        });
-    }
+        }
     </script>
-
-</body>
-
-</html>
 
 </body>
 

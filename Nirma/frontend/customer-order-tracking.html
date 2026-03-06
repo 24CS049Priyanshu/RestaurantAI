@@ -4,15 +4,10 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Order Tracking - Spice Garden" />
-    <title>Order Tracking - Spice Garden</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    <title>Track Order — Spice Garden</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet" />
     <style>
-        /* ── Reset ─────────────────────────────────────────────────── */
         *,
         *::before,
         *::after {
@@ -21,107 +16,76 @@
             padding: 0;
         }
 
-        /* ── Variables ─────────────────────────────────────────────── */
         :root {
             --bg: #0a0a0f;
             --bg-card: rgba(255, 255, 255, 0.04);
-            --bg-card-h: rgba(255, 255, 255, 0.07);
             --border: rgba(255, 255, 255, 0.07);
-
             --text: #f1f5f9;
             --muted: #94a3b8;
             --accent: #a855f7;
             --accent-dark: #7c3aed;
-            --accent-glow: rgba(168, 85, 247, 0.25);
             --green: #22c55e;
-            --red: #ef4444;
-            --blue: #3b82f6;
-            --yellow: #fbbf24;
-
+            --orange: #f97316;
             --radius: 14px;
-            --radius-lg: 18px;
         }
 
         html {
             background: var(--bg);
             color: var(--text);
             font-family: 'Inter', sans-serif;
-            scroll-behavior: smooth;
         }
 
         body {
             margin: 0;
+            min-height: 100vh;
         }
 
-        /* ── Animations ────────────────────────────────────────────── */
         @keyframes fadeUp {
             from {
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes slideIn {
-            from { transform: translateY(-20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
 
-        @keyframes scaleIn {
-            from {
-                opacity: 0;
-                transform: scale(0.8);
-            }
-            to {
-                opacity: 1;
+            0%,
+            100% {
                 transform: scale(1);
             }
+
+            50% {
+                transform: scale(1.08);
+            }
         }
 
-        @keyframes slideRight {
-            from {
-                opacity: 0;
-                transform: translateX(-20px);
-            }
+        @keyframes spin {
             to {
-                opacity: 1;
-                transform: translateX(0);
+                transform: rotate(360deg);
             }
         }
 
-        /* ══════════════════════════════════════════
-       HEADER
-    ══════════════════════════════════════════ */
         header {
             position: sticky;
             top: 0;
-            z-index: 999;
-            background: rgba(10, 10, 15, 0.95);
+            z-index: 99;
+            background: rgba(10, 10, 15, .95);
             border-bottom: 1px solid var(--border);
             backdrop-filter: blur(10px);
         }
 
         .navbar {
-            max-width: 1400px;
+            max-width: 900px;
             margin: 0 auto;
             padding: 1rem 1.75rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            animation: slideIn .3s ease;
         }
 
         .logo {
@@ -132,301 +96,167 @@
             font-weight: 700;
             color: var(--text);
             text-decoration: none;
-            transition: color .2s;
         }
 
         .logo:hover {
             color: var(--accent);
         }
 
-        .logo-icon {
-            font-size: 2rem;
-        }
-
-        .breadcrumb {
+        .nav-home {
+            padding: .5rem 1rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid var(--border);
             color: var(--muted);
-            font-size: .85rem;
-        }
-
-        .breadcrumb a {
-            color: var(--accent);
             text-decoration: none;
-            transition: color .2s;
-        }
-
-        .breadcrumb a:hover {
-            color: var(--text);
-        }
-
-        /* ══════════════════════════════════════════
-       MAIN SECTION
-    ══════════════════════════════════════════ */
-        .page-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem 1.75rem;
-        }
-
-        .page-title {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            animation: fadeUp .5s ease;
-        }
-
-        .page-subtitle {
-            color: var(--muted);
-            margin-bottom: 2rem;
-            animation: fadeUp .5s ease both;
-        }
-
-        /* ── Order Info Card ────────────────────────────────────── */
-        .order-info-card {
-            background: linear-gradient(135deg, rgba(168, 85, 247, .1), rgba(59, 130, 246, .05));
-            border: 1px solid rgba(168, 85, 247, .2);
-            border-radius: var(--radius-lg);
-            padding: 2rem;
-            margin-bottom: 2rem;
-            animation: fadeUp .5s ease;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-        }
-
-        .info-item {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .info-icon {
-            font-size: 2rem;
-            flex-shrink: 0;
-        }
-
-        .info-content h3 {
             font-size: .85rem;
-            text-transform: uppercase;
-            color: var(--muted);
-            font-weight: 600;
-            letter-spacing: .08em;
-            margin-bottom: .5rem;
+            font-weight: 500;
+            transition: all .2s;
         }
 
-        .info-value {
-            font-size: 1.2rem;
-            font-weight: 700;
+        .nav-home:hover {
+            background: rgba(255, 255, 255, .1);
             color: var(--text);
-            word-break: break-all;
         }
 
-        .info-sub {
-            font-size: .8rem;
-            color: var(--muted);
-            margin-top: .25rem;
+        .page-wrap {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 2.5rem 1.75rem;
         }
 
-        /* ══════════════════════════════════════════
-       TIMELINE
-    ══════════════════════════════════════════ */
-        .timeline-section {
+        .order-hero {
+            text-align: center;
+            padding: 2rem 0 1.5rem;
+            animation: fadeUp .5s ease;
+        }
+
+        .hero-icon {
+            font-size: 4rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .order-hero h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin: .75rem 0 .5rem;
+        }
+
+        .order-id-display {
+            display: inline-block;
+            padding: .5rem 1.25rem;
+            border-radius: 999px;
+            background: rgba(168, 85, 247, .12);
+            border: 1px solid rgba(168, 85, 247, .25);
+            color: var(--accent);
+            font-weight: 700;
+            font-size: .9rem;
+        }
+
+        /* ── Status Stepper ── */
+        .status-card {
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 2.5rem 2rem;
-            margin-bottom: 2rem;
+            padding: 2rem;
+            margin-top: 1.5rem;
             animation: fadeUp .5s ease both;
         }
 
-        .timeline-title {
-            font-size: 1.3rem;
+        .status-card h2 {
+            font-size: 1.1rem;
             font-weight: 700;
-            margin-bottom: 2rem;
-            display: flex;
-            align-items: center;
-            gap: .75rem;
+            margin-bottom: 1.75rem;
         }
 
-        .timeline-title-icon {
-            font-size: 1.5rem;
-        }
-
-        .timeline {
+        .stepper {
             position: relative;
-            padding: 1rem 0;
         }
 
-        .timeline::before {
-            content: '';
+        .stepper-line {
             position: absolute;
             left: 19px;
-            top: 40px;
-            bottom: 0;
+            top: 20px;
+            bottom: 20px;
             width: 2px;
-            background: linear-gradient(to bottom, var(--accent), rgba(168, 85, 247, .2));
+            background: rgba(255, 255, 255, .07);
         }
 
-        .timeline-item {
+        .step-item {
             display: flex;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: .85rem 0;
             position: relative;
-            animation: slideRight .5s ease both;
         }
 
-        .timeline-item:nth-child(1) {
-            animation-delay: .1s;
-        }
-
-        .timeline-item:nth-child(2) {
-            animation-delay: .2s;
-        }
-
-        .timeline-item:nth-child(3) {
-            animation-delay: .3s;
-        }
-
-        .timeline-item:nth-child(4) {
-            animation-delay: .4s;
-        }
-
-        .timeline-dot {
+        .step-dot {
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: var(--bg-card);
-            border: 2px solid rgba(255, 255, 255, .1);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             flex-shrink: 0;
-            position: relative;
-            z-index: 10;
-            transition: all .3s;
+            border: 2px solid rgba(255, 255, 255, .07);
+            background: rgba(255, 255, 255, .03);
+            transition: all .4s;
+            z-index: 1;
         }
 
-        .timeline-item.completed .timeline-dot {
-            background: linear-gradient(135deg, var(--green), #16a34a);
+        .step-dot.done {
+            background: var(--green);
             border-color: var(--green);
-            box-shadow: 0 0 16px rgba(34, 197, 94, .4);
         }
 
-        .timeline-item.active .timeline-dot {
+        .step-dot.active {
             background: linear-gradient(135deg, var(--accent-dark), var(--accent));
             border-color: var(--accent);
-            box-shadow: 0 0 16px rgba(168, 85, 247, .4);
-            animation: pulse 1.5s infinite;
+            animation: pulse 1.5s ease-in-out infinite;
         }
 
-        .timeline-item.pending .timeline-dot {
-            background: rgba(255, 255, 255, .05);
-            border-color: rgba(255, 255, 255, .1);
-        }
-
-        .timeline-content {
+        .step-info {
             flex: 1;
-            padding-top: .25rem;
         }
 
-        .timeline-status {
-            font-size: 1.05rem;
+        .step-title {
             font-weight: 700;
-            color: var(--text);
-            margin-bottom: .35rem;
+            font-size: .95rem;
         }
 
-        .timeline-description {
-            font-size: .85rem;
+        .step-time {
+            font-size: .75rem;
             color: var(--muted);
-            margin-bottom: .5rem;
-            line-height: 1.5;
+            margin-top: 2px;
         }
 
-        .timeline-time {
-            font-size: .8rem;
-            color: #475569;
-            display: flex;
-            align-items: center;
-            gap: .35rem;
-        }
-
-        .timeline-time.estimated {
-            color: var(--yellow);
-        }
-
-        .timeline-time.completed {
-            color: var(--green);
-        }
-
-        /* ── Status Badge ────────────────────────────────────────– */
-        .status-badge {
-            display: inline-block;
-            padding: .5rem 1rem;
-            border-radius: 25px;
-            font-size: .8rem;
-            font-weight: 700;
-            margin-top: 1rem;
-        }
-
-        .badge-completed {
-            background: rgba(34, 197, 94, .2);
-            color: var(--green);
-        }
-
-        .badge-active {
-            background: rgba(168, 85, 247, .2);
-            color: var(--accent);
-        }
-
-        .badge-pending {
-            background: rgba(255, 255, 255, .05);
+        .step-info.muted .step-title {
             color: var(--muted);
         }
 
-        /* ══════════════════════════════════════════
-       ORDER DETAILS
-    ══════════════════════════════════════════ */
-        .details-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .detail-card {
+        /* ── Details Card ── */
+        .details-card {
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 1.5rem;
-            animation: fadeUp .5s ease both;
+            padding: 1.75rem;
+            margin-top: 1.25rem;
+            animation: fadeUp .6s ease both;
         }
 
-        .detail-card:nth-child(2) {
-            animation-delay: .1s;
-        }
-
-        .detail-card:nth-child(3) {
-            animation-delay: .2s;
-        }
-
-        .detail-title {
+        .details-card h2 {
             font-size: 1rem;
             font-weight: 700;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: .5rem;
-        }
-
-        .detail-title-icon {
-            font-size: 1.3rem;
+            margin-bottom: 1.25rem;
         }
 
         .detail-row {
             display: flex;
             justify-content: space-between;
-            padding: .75rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, .05);
+            align-items: center;
+            padding: .65rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, .04);
             font-size: .9rem;
         }
 
@@ -440,486 +270,261 @@
 
         .detail-value {
             font-weight: 600;
-            color: var(--text);
-            text-align: right;
-            flex: 0 0 auto;
         }
 
+        .badge-pending {
+            color: #fbbf24;
+        }
+
+        .badge-preparing {
+            color: #fb923c;
+        }
+
+        .badge-completed {
+            color: var(--green);
+        }
+
+        /* ── Item List ── */
         .items-list {
+            margin-top: .75rem;
+        }
+
+        .order-item {
             display: flex;
-            flex-direction: column;
-            gap: .5rem;
+            justify-content: space-between;
+            font-size: .85rem;
+            padding: .5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, .04);
         }
 
-        .item-chip {
-            background: rgba(168, 85, 247, .1);
-            border: 1px solid rgba(168, 85, 247, .2);
-            padding: .5rem .75rem;
-            border-radius: 6px;
-            font-size: .8rem;
-            color: var(--accent);
+        .order-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-name-qty {
+            color: var(--text);
+        }
+
+        .item-price-val {
             font-weight: 600;
+            color: var(--green);
         }
 
-        /* ──────────────────────────────────────────────────────── */
-        .support-section {
-            background: linear-gradient(135deg, rgba(59, 130, 246, .1), rgba(34, 197, 94, .05));
-            border: 1px solid rgba(59, 130, 246, .1);
-            border-radius: var(--radius-lg);
-            padding: 2rem;
-            text-align: center;
-            animation: fadeUp .5s ease both;
-            animation-delay: .3s;
-        }
-
-        .support-title {
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin-bottom: .75rem;
-        }
-
-        .support-text {
-            color: var(--muted);
-            margin-bottom: 1.5rem;
-            font-size: .95rem;
-        }
-
-        .support-buttons {
+        /* ── Actions ── */
+        .actions {
             display: flex;
             gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
+            margin-top: 1.5rem;
         }
 
-        .support-btn {
-            padding: .75rem 1.5rem;
+        .btn {
+            flex: 1;
+            padding: .85rem;
             border-radius: 10px;
             border: none;
-            background: rgba(255, 255, 255, .05);
-            color: var(--text);
             font-size: .9rem;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            transition: all .2s;
             font-family: 'Inter', sans-serif;
+            transition: all .2s;
+            text-align: center;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: .4rem;
         }
 
-        .support-btn:hover {
-            background: rgba(255, 255, 255, .1);
-            border-color: var(--accent);
-            color: var(--accent);
-        }
-
-        .support-btn.primary {
+        .btn-primary {
             background: linear-gradient(135deg, var(--accent-dark), var(--accent));
-            color: white;
-            border: none;
+            color: #fff;
         }
 
-        .support-btn.primary:hover {
+        .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 24px rgba(168, 85, 247, .3);
         }
 
-        /* ═══════════════════════════════════════════
-       RESPONSIVE
-    ══════════════════════════════════════════ */
-        @media (max-width: 900px) {
-            .order-info-card {
-                grid-template-columns: 1fr;
-                gap: 1.5rem;
-            }
-
-            .support-buttons {
-                flex-direction: column;
-            }
-
-            .support-btn {
-                width: 100%;
-            }
+        .btn-secondary {
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid var(--border);
+            color: var(--text);
         }
 
-        @media (max-width: 600px) {
-            .page-container {
-                padding: 1.5rem 1rem;
-            }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, .1);
+        }
 
-            .page-title {
-                font-size: 1.5rem;
-            }
+        .delivery-eta {
+            background: rgba(34, 197, 94, .08);
+            border: 1px solid rgba(34, 197, 94, .18);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            margin-top: 1.25rem;
+            animation: fadeUp .7s ease both;
+        }
 
-            .order-info-card {
-                padding: 1.5rem 1rem;
-            }
+        .eta-icon {
+            font-size: 1.5rem;
+        }
 
-            .timeline-section {
-                padding: 1.5rem 1rem;
-            }
+        .eta-text strong {
+            display: block;
+            font-weight: 700;
+            color: var(--green);
+        }
 
-            .timeline::before {
-                left: 19px;
-            }
-
-            .timeline-item {
-                margin-bottom: 1.5rem;
-            }
-
-            .detail-row {
-                flex-direction: column;
-                gap: .25rem;
-            }
-
-            .detail-value {
-                text-align: left;
-            }
-
-            .support-section {
-                padding: 1.5rem 1rem;
-            }
+        .eta-text span {
+            font-size: .8rem;
+            color: var(--muted);
         }
     </style>
 </head>
 
 <body>
-
-    <!-- ══════════ HEADER ══════════ -->
     <header>
         <div class="navbar">
-            <a href="customer-home.html" class="logo">
-                <div class="logo-icon">🍜</div>
-            </a>
-
-            <div class="breadcrumb">
-                <a href="customer-home.html">Home</a> > 
-                <span style="color: var(--accent);">Order Tracking</span>
-            </div>
+            <a href="customer-home.html" class="logo">🍜 <span style="font-size:1rem;">Spice Garden</span></a>
+            <a href="customer-home.html" class="nav-home">← Home</a>
         </div>
     </header>
 
-    <!-- ══════════ MAIN CONTENT ══════════ -->
-    <div class="page-container">
-        <h1 class="page-title">🚚 Track Your Order</h1>
-        <p class="page-subtitle">Real-time updates on your delivery</p>
+    <div class="page-wrap">
+        <div class="order-hero">
+            <div class="hero-icon">🎉</div>
+            <h1>Order Confirmed!</h1>
+            <div class="order-id-display" id="orderIdDisplay">#ORD-000000</div>
+        </div>
 
-        <!-- Order Info Card -->
-        <div class="order-info-card">
-            <div class="info-item">
-                <div class="info-icon">📋</div>
-                <div class="info-content">
-                    <h3>Order ID</h3>
-                    <div class="info-value" id="orderId">#ORD-000000</div>
-                    <div class="info-sub">Placed at <span id="orderTime">--:-- --</span></div>
-                </div>
+        <div class="delivery-eta">
+            <div class="eta-icon">🚚</div>
+            <div class="eta-text">
+                <strong>Estimated Delivery: 30–45 minutes</strong>
+                <span>Placed at <span id="orderTime">—</span></span>
             </div>
+        </div>
 
-            <div class="info-item">
-                <div class="info-icon">💰</div>
-                <div class="info-content">
-                    <h3>Total Amount</h3>
-                    <div class="info-value" id="totalAmount">₹0</div>
-                    <div class="info-sub">Including taxes & delivery</div>
+        <!-- Stepper -->
+        <div class="status-card">
+            <h2>📍 Order Status</h2>
+            <div class="stepper">
+                <div class="stepper-line"></div>
+                <div class="step-item">
+                    <div class="step-dot done">✓</div>
+                    <div class="step-info">
+                        <div class="step-title">Order Placed</div>
+                        <div class="step-time" id="time1">Just now</div>
+                    </div>
                 </div>
-            </div>
-
-            <div class="info-item">
-                <div class="info-icon">🏠</div>
-                <div class="info-content">
-                    <h3>Delivery Address</h3>
-                    <div class="info-value" style="font-size: 1rem;" id="deliveryAddress">Address...</div>
+                <div class="step-item">
+                    <div class="step-dot active">🍳</div>
+                    <div class="step-info">
+                        <div class="step-title">Preparing Your Food</div>
+                        <div class="step-time">Kitchen is working on your order…</div>
+                    </div>
                 </div>
-            </div>
-
-            <div class="info-item">
-                <div class="info-icon">🕐</div>
-                <div class="info-content">
-                    <h3>Estimated Delivery</h3>
-                    <div class="info-value" id="estimatedTime">--:-- --</div>
-                    <div class="info-sub">Expected time</div>
+                <div class="step-item">
+                    <div class="step-dot">🚚</div>
+                    <div class="step-info muted">
+                        <div class="step-title">Out for Delivery</div>
+                        <div class="step-time">Estimated ~25 min from now</div>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-dot">🏠</div>
+                    <div class="step-info muted">
+                        <div class="step-title">Delivered</div>
+                        <div class="step-time">Estimated ~40 min from now</div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Timeline Section -->
-        <div class="timeline-section">
-            <div class="timeline-title">
-                <span class="timeline-title-icon">📍</span>
-                Order Status Timeline
+        <!-- Order Details -->
+        <div class="details-card">
+            <h2>📋 Order Details</h2>
+            <div class="detail-row">
+                <span class="detail-label">Order ID</span>
+                <span class="detail-value" id="detailOrderId">—</span>
             </div>
-
-            <div class="timeline" id="timeline">
-                <!-- Filled by JavaScript -->
+            <div class="detail-row">
+                <span class="detail-label">Customer</span>
+                <span class="detail-value" id="detailCustomer">—</span>
             </div>
-        </div>
-
-        <!-- Order Details Grid -->
-        <div class="details-grid">
-            <!-- Customer Details -->
-            <div class="detail-card">
-                <div class="detail-title">
-                    <span class="detail-title-icon">👤</span>
-                    Customer Details
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Name</span>
-                    <span class="detail-value" id="customerName">--</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Phone</span>
-                    <span class="detail-value" id="customerPhone">--</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Delivery Type</span>
-                    <span class="detail-value" id="deliveryType">Home Delivery</span>
-                </div>
+            <div class="detail-row">
+                <span class="detail-label">Delivery Address</span>
+                <span class="detail-value" id="detailAddress">—</span>
             </div>
-
-            <!-- Order Items -->
-            <div class="detail-card">
-                <div class="detail-title">
-                    <span class="detail-title-icon">🍽️</span>
-                    Order Items
-                </div>
-                <div class="items-list" id="itemsList">
-                    <!-- Filled by JavaScript -->
-                </div>
+            <div class="detail-row">
+                <span class="detail-label">Status</span>
+                <span class="detail-value badge-preparing" id="detailStatus">Preparing</span>
             </div>
-
-            <!-- Order Summary -->
-            <div class="detail-card">
-                <div class="detail-title">
-                    <span class="detail-title-icon">📊</span>
-                    Order Summary
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Subtotal</span>
-                    <span class="detail-value" id="subtotal">₹0</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Tax (5%)</span>
-                    <span class="detail-value" id="taxAmount">₹0</span>
-                </div>
-                <div class="detail-row">
-                    <span class="detail-label">Delivery Fee</span>
-                    <span class="detail-value" id="deliveryFee">₹40</span>
-                </div>
-                <div class="detail-row" style="border-bottom: 1px solid var(--border); padding-top: 1rem; margin-top: 1rem;">
-                    <span class="detail-label" style="font-weight: 700;">Total</span>
-                    <span class="detail-value" style="color: var(--green); font-size: 1.1rem;" id="finalTotal">₹0</span>
-                </div>
+            <div class="detail-row">
+                <span class="detail-label">Total Amount</span>
+                <span class="detail-value" style="color:var(--green);" id="detailTotal">—</span>
+            </div>
+            <h2 style="margin-top:1.25rem;">🍽️ Items Ordered</h2>
+            <div class="items-list" id="itemsList">
+                <div class="order-item"><span>Loading…</span></div>
             </div>
         </div>
 
-        <!-- Support Section -->
-        <div class="support-section">
-            <div class="support-title">Need Help?</div>
-            <p class="support-text">Contact our support team for any questions about your order</p>
-            <div class="support-buttons">
-                <button class="support-btn">📞 Call Support</button>
-                <button class="support-btn">💬 Chat with Agent</button>
-                <button class="support-btn primary" onclick="viewOrders()">View All Orders</button>
-            </div>
+        <div class="actions">
+            <a href="customer-menu.html" class="btn btn-secondary">🍱 Order Again</a>
+            <a href="customer-home.html" class="btn btn-primary">🏠 Go Home</a>
         </div>
     </div>
 
-    <!-- ══════════ SCRIPT ══════════ -->
     <script>
         "use strict";
+        // Load last order
+        const lastOrderId = localStorage.getItem('lastOrderId') || '#ORD-000000';
+        const orders = JSON.parse(localStorage.getItem('orders')) || [];
+        const order = orders.find(o => o.id === lastOrderId) || null;
 
-        const statuses = [
-            {
-                name: 'Order Received',
-                description: 'Your order has been received and is being processed',
-                icon: '✓',
-                stage: 'received'
-            },
-            {
-                name: 'Preparing',
-                description: 'Your delicious food is being prepared by our chefs',
-                icon: '👨‍🍳',
-                stage: 'preparing'
-            },
-            {
-                name: 'Out for Delivery',
-                description: 'Your order is on its way to you',
-                icon: '🚚',
-                stage: 'delivery'
-            },
-            {
-                name: 'Completed',
-                description: 'Your order has been delivered successfully',
-                icon: '🎉',
-                stage: 'completed'
-            }
-        ];
+        document.getElementById('orderIdDisplay').textContent = lastOrderId;
+        document.getElementById('detailOrderId').textContent = lastOrderId;
+        document.getElementById('time1').textContent = order ? order.timestamp : new Date().toLocaleTimeString();
+        document.getElementById('orderTime').textContent = order ? order.timestamp : new Date().toLocaleTimeString();
 
-        const menuData = [
-            { id: 1, name: 'Butter Chicken', price: 280 },
-            { id: 2, name: 'Chicken Tikka Masala', price: 300 },
-            { id: 3, name: 'Paneer Butter Masala', price: 260 },
-            { id: 4, name: 'Tandoori Chicken', price: 260 },
-            { id: 5, name: 'Rogan Josh', price: 280 },
-            { id: 6, name: 'Naan', price: 80 },
-            { id: 7, name: 'Garlic Naan', price: 100 },
-            { id: 8, name: 'Puri', price: 60 },
-            { id: 9, name: 'Roti', price: 50 },
-            { id: 10, name: 'Paratha', price: 90 },
-            { id: 11, name: 'Biryani', price: 250 },
-            { id: 12, name: 'Vegetable Biryani', price: 220 },
-            { id: 13, name: 'Chicken Fried Rice', price: 200 },
-            { id: 14, name: 'Samosa', price: 60 },
-            { id: 15, name: 'Paneer Tikka', price: 220 },
-            { id: 16, name: 'Chicken 65', price: 240 },
-            { id: 17, name: 'Pakora', price: 100 },
-            { id: 18, name: 'Gulab Jamun', price: 120 },
-            { id: 19, name: 'Rasgulla', price: 100 },
-            { id: 20, name: 'Kheer', price: 80 },
-            { id: 21, name: 'Mango Lassi', price: 90 },
-            { id: 22, name: 'Chai', price: 40 },
-            { id: 23, name: 'Masala Lassi', price: 80 },
-            { id: 24, name: 'Raita', price: 50 },
-            { id: 25, name: 'Papad', price: 40 },
-        ];
-
-        let currentOrder = null;
-        let currentStage = 'received';
-
-        function getItemName(itemId) {
-            const item = menuData.find(i => i.id === itemId);
-            return item ? item.name : 'Unknown Item';
-        }
-
-        function generateMockOrder() {
-            // Get latest order from localStorage
-            const orders = JSON.parse(localStorage.getItem('orders')) || [];
-            if (orders.length > 0) {
-                currentOrder = orders[orders.length - 1];
+        if (order) {
+            document.getElementById('detailCustomer').textContent = order.customer || '—';
+            document.getElementById('detailAddress').textContent = order.address || 'Pickup';
+            document.getElementById('detailTotal').textContent = '₹' + order.total;
+            const itemsList = document.getElementById('itemsList');
+            if (order.items && order.items.length > 0) {
+                itemsList.innerHTML = order.items.map(i =>
+                    `<div class="order-item"><span class="item-name-qty">${i.name} × ${i.quantity}</span><span class="item-price-val">₹${i.price * i.quantity}</span></div>`
+                ).join('');
             } else {
-                // Create mock order if none exists
-                currentOrder = {
-                    id: '#ORD-' + Math.floor(100000 + Math.random() * 900000),
-                    customer: 'John Doe',
-                    phone: '9876543210',
-                    address: '123 Main Street, Downtown, 110001',
-                    items: [
-                        { id: 1, quantity: 2 },
-                        { id: 6, quantity: 1 },
-                        { id: 18, quantity: 2 }
-                    ],
-                    total: 860,
-                    timestamp: new Date().toLocaleString(),
-                    deliveryType: 'home',
-                    status: 'pending'
-                };
+                itemsList.innerHTML = '<div class="order-item"><span>No item details available</span></div>';
             }
-
-            // Simulate various order stages
-            const randomStage = Math.floor(Math.random() * 4);
-            const stages = ['received', 'preparing', 'delivery', 'completed'];
-            currentStage = stages[randomStage];
+        } else {
+            document.getElementById('detailCustomer').textContent = 'Guest Customer';
+            document.getElementById('detailAddress').textContent = 'Address on file';
+            document.getElementById('detailTotal').textContent = '—';
+            document.getElementById('itemsList').innerHTML = '<div class="order-item"><span>No order data found</span></div>';
         }
 
-        function renderOrderInfo() {
-            if (!currentOrder) return;
-
-            document.getElementById('orderId').textContent = currentOrder.id;
-            document.getElementById('orderTime').textContent = currentOrder.timestamp;
-            document.getElementById('totalAmount').textContent = '₹' + currentOrder.total;
-            document.getElementById('deliveryAddress').textContent = currentOrder.address;
-            document.getElementById('customerName').textContent = currentOrder.customer;
-            document.getElementById('customerPhone').textContent = currentOrder.phone;
-            document.getElementById('deliveryType').textContent = currentOrder.deliveryType === 'home' ? 'Home Delivery' : 'Pickup';
-
-            // Calculate delivery time
-            const orderTime = new Date();
-            const deliveryTime = new Date(orderTime.getTime() + 45 * 60000); // 45 minutes from now
-            document.getElementById('estimatedTime').textContent = deliveryTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-
-            // Order items
-            const itemsList = currentOrder.items.map(item => {
-                const itemData = menuData.find(i => i.id === item.id);
-                return `<div class="item-chip">🍽️ ${itemData.name} x${item.quantity}</div>`;
-            }).join('');
-            document.getElementById('itemsList').innerHTML = itemsList;
-
-            // Summary
-            const subtotal = currentOrder.total - 40 - Math.round((currentOrder.total - 40 - 40) * 0.05);
-            const tax = Math.round((currentOrder.total - 40 - 40) * 0.05);
-            document.getElementById('subtotal').textContent = '₹' + Math.max(0, subtotal);
-            document.getElementById('taxAmount').textContent = '₹' + tax;
-            document.getElementById('finalTotal').textContent = '₹' + currentOrder.total;
-        }
-
-        function renderTimeline() {
-            const timeline = document.getElementById('timeline');
-            const stageOrder = ['received', 'preparing', 'delivery', 'completed'];
-            const currentStageIndex = stageOrder.indexOf(currentStage);
-
-            const timelineHtml = statuses.map((status, index) => {
-                let statusClass = 'pending';
-                let timeText = '⏳ Pending...';
-                
-                if (index <= currentStageIndex) {
-                    statusClass = 'completed';
-                    timeText = '✓ Completed';
+        // Simulate status progression
+        const steps = document.querySelectorAll('.step-dot');
+        let currentStep = 1;
+        const timings = [0, 8000, 20000, 38000];
+        timings.forEach((delay, idx) => {
+            if (idx === 0) return;
+            setTimeout(() => {
+                steps[idx - 1].classList.remove('active');
+                steps[idx - 1].classList.add('done');
+                steps[idx - 1].textContent = '✓';
+                if (idx < steps.length) {
+                    steps[idx].classList.add('active');
                 }
-                
-                if (index === currentStageIndex) {
-                    statusClass = 'active';
-                    timeText = '🔄 In Progress';
-                }
-
-                return `
-                    <div class="timeline-item ${statusClass}">
-                        <div class="timeline-dot">${status.icon}</div>
-                        <div class="timeline-content">
-                            <div class="timeline-status">${status.name}</div>
-                            <div class="timeline-description">${status.description}</div>
-                            <div class="timeline-time ${statusClass === 'completed' ? 'completed' : statusClass === 'active' ? 'estimated' : ''}">
-                                ${statusClass === 'active' ? '🔄 In Progress' : statusClass === 'completed' ? '✓ Completed' : '⏳ Pending'}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            timeline.innerHTML = timelineHtml;
-        }
-
-        function updateOrderStatus() {
-            // Simulate automatic status updates
-            const stages = ['received', 'preparing', 'delivery', 'completed'];
-            const currentIndex = stages.indexOf(currentStage);
-            
-            if (currentIndex < stages.length - 1) {
-                // Move to next stage after some time
-                setTimeout(() => {
-                    if (Math.random() > 0.7) { // 30% chance to update
-                        currentStage = stages[currentIndex + 1];
-                        renderTimeline();
-                    }
-                }, 15000); // Check every 15 seconds
-            }
-        }
-
-        function viewOrders() {
-            window.location.href = 'customer-home.html';
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            generateMockOrder();
-            renderOrderInfo();
-            renderTimeline();
-            updateOrderStatus();
-
-            // Simulate periodic status updates
-            setInterval(() => {
-                if (Math.random() > 0.8) {
-                    updateOrderStatus();
-                }
-            }, 20000);
+            }, delay);
         });
     </script>
-
 </body>
 
 </html>

@@ -14,7 +14,7 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <!-- Socket.io client -->
-    <script src="/socket.io/socket.io.js"></script>
+    
 
     <style>
         /* ── Reset ─────────────────────────────────────────────────── */
@@ -1072,6 +1072,7 @@
             }
         }
     </style>
+<script src="nav.js"></script>
 </head>
 
 <body>
@@ -1173,10 +1174,29 @@
                 </div>
 
                 <!-- Notifications -->
-                <button class="icon-btn" aria-label="Notifications" onclick="alert('3 new alerts')">
-                    🔔
-                    <span class="notif-dot" aria-hidden="true"></span>
-                </button>
+                <div style="position:relative" id="notifWrap">
+                    <button class="icon-btn" aria-label="Notifications" id="notifBtn" onclick="toggleNotifPanel()">
+                        🔔
+                        <span class="notif-dot" aria-hidden="true" id="notifDot"></span>
+                    </button>
+                    <!-- Notification Panel -->
+                    <div id="notifPanel"
+                        style="display:none;position:absolute;top:calc(100% + 10px);right:0;width:320px;background:#0d0d18;border:1px solid rgba(255,255,255,.08);border-radius:14px;box-shadow:0 16px 48px rgba(0,0,0,.6);z-index:9999;overflow:hidden;">
+                        <div
+                            style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid rgba(255,255,255,.06);">
+                            <span style="font-weight:700;font-size:.9rem;">🔔 Notifications</span>
+                            <button onclick="clearNotifs()"
+                                style="background:none;border:none;color:#94a3b8;font-size:.75rem;cursor:pointer;">Clear
+                                all</button>
+                        </div>
+                        <div id="notifList" style="max-height:300px;overflow-y:auto;"></div>
+                        <div style="padding:.75rem 1.25rem;border-top:1px solid rgba(255,255,255,.06);">
+                            <button onclick="navigate('support')"
+                                style="width:100%;background:rgba(168,85,247,.12);border:1px solid rgba(168,85,247,.25);color:#a855f7;font-size:.8rem;font-weight:600;padding:.5rem;border-radius:8px;cursor:pointer;">View
+                                All Alerts →</button>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Refresh -->
                 <button class="icon-btn" id="refreshBtn" aria-label="Refresh data" onclick="refreshData()">🔄</button>
@@ -1204,7 +1224,7 @@
             <!-- ── KPI Cards ──────────────────────────────────────────── -->
             <div class="section-header">
                 <span class="section-title">Key Performance Indicators</span>
-                <span class="section-action" onclick="alert('Exporting report…')">Export Report ↗</span>
+                <span class="section-action" onclick="exportReport()">Export Report ↗</span>
             </div>
 
             <div class="kpi-grid">
@@ -1352,7 +1372,7 @@
                             <div class="ctitle">Recent Orders</div>
                             <div class="csub">Latest transactions platform-wide</div>
                         </div>
-                        <span class="section-action" onclick="alert('Loading full order list…')">View all</span>
+                        <span class="section-action" onclick="navigate('orders')">View all →</span>
                     </div>
                     <table class="data-table" role="table" aria-label="Recent orders">
                         <thead>
@@ -1398,11 +1418,114 @@
 
         /* ══ NAV ══════════════════════════════════════════════════════ */
         function navigate(page) {
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-            document.querySelector('.page-title').textContent =
-                page.charAt(0).toUpperCase() + page.slice(1);
-            document.querySelector('.page-breadcrumb').textContent = `Admin Console › ${page.charAt(0).toUpperCase() + page.slice(1)}`;
+            const isLocalAdmin = window.location.pathname.includes('admin-');
+            const isAdminPath = window.location.pathname.includes('/admin/') || isLocalAdmin;
+
+            const routes = {
+                'dashboard': isAdminPath ? 'admin-dashboard.html' : 'restaurant-dashboard.html',
+                'restaurants': 'admin-restaurants.html',
+                'orders': isAdminPath ? 'admin-dashboard.html' : 'restaurant-orders.html',
+                'revenue': 'revenue-intelligence.html',
+                'insights': 'price-optimization.html',
+                'voice': 'voice-orders.html',
+                'combos': 'combo-recommendations.html',
+                'users': 'admin-users.html',
+                'settings': isAdminPath ? 'admin-settings.html' : 'restaurant-settings.html',
+                'menu': 'restaurant-menu.html',
+                'customers': 'restaurant-dashboard.html',
+                'reports': isAdminPath ? 'admin-settings.html' : 'restaurant-reports.html',
+                'profile': isAdminPath ? 'admin-settings.html' : 'restaurant-settings.html',
+                'support': isAdminPath ? 'admin-support.html' : 'restaurant-support.html'
+            };
+
+            const target = routes[page];
+            if (target && target !== '#') {
+                window.location.href = target;
+            } else {
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                try {
+                    if (typeof event !== 'undefined' && event && event.currentTarget) {
+                        event.currentTarget.classList.add('active');
+                    }
+                } catch (e) { }
+                console.log('Navigating to ' + page + '... (Fallback)');
+            }
+        }
+
+        /* ══ NOTIFICATIONS ═══════════════════════════════════════════ */
+        const NOTIFS = [
+            { icon: '🆕', title: 'New Restaurant Registered', desc: 'Tandoor Palace joined the platform', time: '2 min ago', unread: true },
+            { icon: '⚠️', title: 'High Order Volume', desc: 'Spice Garden: 50+ orders in the last hour', time: '8 min ago', unread: true },
+            { icon: '❌', title: 'Payment Failed', desc: 'Order #ORD-887232 payment declined', time: '15 min ago', unread: true },
+            { icon: '📊', title: 'Daily Report Ready', desc: "Yesterday's summary is available", time: '1 hr ago', unread: false },
+            { icon: '🔒', title: 'Suspicious Login Attempt', desc: 'Admin login from unknown IP blocked', time: '3 hr ago', unread: false },
+        ];
+        let notifData = [...NOTIFS];
+
+        function loadNotifList() {
+            const list = document.getElementById('notifList');
+            if (!list) return;
+            const dot = document.getElementById('notifDot');
+            const unreadCount = notifData.filter(n => n.unread).length;
+            if (dot) dot.style.display = unreadCount > 0 ? 'block' : 'none';
+            list.innerHTML = notifData.length === 0
+                ? '<div style="padding:1.25rem;text-align:center;color:#475569;font-size:.85rem;">No new notifications</div>'
+                : notifData.map((n, i) => `
+                    <div onclick="markRead(${i})" style="padding:1rem 1.25rem;border-bottom:1px solid rgba(255,255,255,.05);display:flex;gap:.75rem;align-items:flex-start;cursor:pointer;background:${n.unread ? 'rgba(168,85,247,.04)' : 'transparent'};transition:background .2s;">
+                        <div style="font-size:1.25rem;line-height:1;flex-shrink:0">${n.icon}</div>
+                        <div style="flex:1;min-width:0">
+                            <div style="font-size:.82rem;font-weight:700;color:${n.unread ? '#f1f5f9' : '#94a3b8'}">${n.title}</div>
+                            <div style="font-size:.75rem;color:#64748b;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${n.desc}</div>
+                        </div>
+                        <div style="font-size:.65rem;color:#475569;white-space:nowrap;flex-shrink:0">${n.time}</div>
+                    </div>`).join('');
+        }
+
+        function toggleNotifPanel() {
+            const panel = document.getElementById('notifPanel');
+            if (!panel) return;
+            const isOpen = panel.style.display !== 'none';
+            panel.style.display = isOpen ? 'none' : 'block';
+            if (!isOpen) loadNotifList();
+        }
+
+        function markRead(idx) {
+            notifData[idx].unread = false;
+            loadNotifList();
+        }
+
+        function clearNotifs() {
+            notifData = [];
+            loadNotifList();
+        }
+
+        // Close on outside click
+        document.addEventListener('click', function (e) {
+            const wrap = document.getElementById('notifWrap');
+            if (wrap && !wrap.contains(e.target)) {
+                const panel = document.getElementById('notifPanel');
+                if (panel) panel.style.display = 'none';
+            }
+        });
+
+        /* ══ EXPORT REPORT ═══════════════════════════════════════════ */
+        function exportReport() {
+            const rows = [
+                ['Metric', 'Value'],
+                ['Total Restaurants', '24'],
+                ['Orders Today', '1247'],
+                ["Today's Revenue", "₹3.8L"],
+                ['Active Users', '186'],
+                ['Generated At', new Date().toLocaleString('en-IN')]
+            ];
+            const csv = rows.map(r => r.join(',')).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'RestaurantAI_Report_' + new Date().toISOString().slice(0, 10) + '.csv';
+            a.click();
+            URL.revokeObjectURL(url);
         }
 
         /* ══ CLOCK ═══════════════════════════════════════════════════ */
@@ -1419,6 +1542,7 @@
         }
         updateClock();
         setInterval(updateClock, 30000);
+
 
         /* ══ KPI COUNTER ANIMATION ═══════════════════════════════════ */
         function animateCount(elemId, target, prefix = '', suffix = '', duration = 1500) {

@@ -14,7 +14,7 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <!-- Socket.io client -->
-    <script src="/socket.io/socket.io.js"></script>
+    
 
     <style>
         /* ── Reset ─────────────────────────────────────────────────── */
@@ -690,6 +690,7 @@
             }
         }
     </style>
+<script src="nav.js"></script>
 </head>
 
 <body>
@@ -774,7 +775,29 @@
                     <span style="color:var(--muted)">🔍</span>
                     <input type="text" placeholder="Search orders…" aria-label="Search" />
                 </div>
-                <button class="icon-btn" aria-label="Notifications">🔔</button>
+                <div style="position:relative" id="notifWrap">
+                    <button class="icon-btn" aria-label="Notifications" id="notifBtn" onclick="toggleNotifPanel()">
+                        🔔
+                        <span class="notif-dot" aria-hidden="true" id="notifDot"
+                            style="position:absolute;top:4px;right:4px;width:8px;height:8px;border-radius:50%;background:#ef4444;display:block;"></span>
+                    </button>
+                    <div id="notifPanel"
+                        style="display:none;position:absolute;top:calc(100% + 10px);right:0;width:310px;background:#0d0d18;border:1px solid rgba(255,255,255,.08);border-radius:14px;box-shadow:0 16px 48px rgba(0,0,0,.6);z-index:9999;overflow:hidden;">
+                        <div
+                            style="display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid rgba(255,255,255,.06);">
+                            <span style="font-weight:700;font-size:.9rem;">🔔 Notifications</span>
+                            <button onclick="clearNotifs()"
+                                style="background:none;border:none;color:#94a3b8;font-size:.75rem;cursor:pointer;">Clear
+                                all</button>
+                        </div>
+                        <div id="notifList" style="max-height:280px;overflow-y:auto;"></div>
+                        <div style="padding:.75rem 1.25rem;border-top:1px solid rgba(255,255,255,.06);">
+                            <button onclick="navigate('support')"
+                                style="width:100%;background:rgba(168,85,247,.12);border:1px solid rgba(168,85,247,.25);color:#a855f7;font-size:.8rem;font-weight:600;padding:.5rem;border-radius:8px;cursor:pointer;">View
+                                Support Center →</button>
+                        </div>
+                    </div>
+                </div>
                 <button class="icon-btn" aria-label="Refresh" onclick="refreshData()">🔄</button>
                 <button class="icon-btn" aria-label="Logout" onclick="logout()">🚪</button>
                 <div class="topbar-avatar" role="img" aria-label="User avatar">👨‍🍳</div>
@@ -902,9 +925,38 @@
 
         /* ══ NAV ══════════════════════════════════════════════════════ */
         function navigate(page) {
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-            console.log(`Navigating to ${page}...`);
+            const isLocalAdmin = window.location.pathname.includes('admin-');
+            const isAdminPath = window.location.pathname.includes('/admin/') || isLocalAdmin;
+
+            const routes = {
+                'dashboard': isAdminPath ? 'admin-dashboard.html' : 'restaurant-dashboard.html',
+                'restaurants': 'admin-restaurants.html',
+                'orders': isAdminPath ? 'admin-dashboard.html' : 'restaurant-orders.html',
+                'revenue': 'revenue-intelligence.html',
+                'insights': 'price-optimization.html',
+                'voice': 'voice-orders.html',
+                'combos': 'combo-recommendations.html',
+                'users': 'admin-users.html',
+                'settings': isAdminPath ? 'admin-settings.html' : 'restaurant-settings.html',
+                'menu': 'restaurant-menu.html',
+                'customers': 'restaurant-dashboard.html',
+                'reports': isAdminPath ? 'admin-settings.html' : 'restaurant-reports.html',
+                'profile': isAdminPath ? 'admin-settings.html' : 'restaurant-settings.html',
+                'support': isAdminPath ? 'admin-support.html' : 'restaurant-support.html'
+            };
+
+            const target = routes[page];
+            if (target && target !== '#') {
+                window.location.href = target;
+            } else {
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                try {
+                    if (typeof event !== 'undefined' && event && event.currentTarget) {
+                        event.currentTarget.classList.add('active');
+                    }
+                } catch (e) { }
+                console.log('Navigating to ' + page + '... (Fallback)');
+            }
         }
 
         /* ══ LOGOUT ═════════════════════════════════════════════════ */
@@ -913,6 +965,61 @@
                 window.location.href = 'restaurant-login.html';
             }
         }
+
+        /* ══ NOTIFICATIONS ════════════════════════════════════════════ */
+        const NOTIFS_MGR = [
+            { icon: '🆕', title: 'New Order Received', desc: 'Order #ORD-114532 — Butter Chicken × 2', time: '1 min ago', unread: true },
+            { icon: '🔔', title: 'Peak Hour Alert', desc: 'High orders expected between 7–9 PM tonight', time: '5 min ago', unread: true },
+            { icon: '✅', title: 'Order Delivered', desc: 'Order #ORD-114520 marked as delivered', time: '12 min ago', unread: false },
+            { icon: '⚠️', title: 'Low Inventory', desc: 'Paneer Tikka: only 3 portions remaining', time: '30 min ago', unread: false },
+            { icon: '📊', title: 'Daily Summary', desc: '285 orders today · ₹8.5L revenue so far', time: '1 hr ago', unread: false },
+        ];
+        let notifMgrData = [...NOTIFS_MGR];
+
+        function loadNotifList() {
+            const list = document.getElementById('notifList');
+            if (!list) return;
+            const dot = document.getElementById('notifDot');
+            const unreadCount = notifMgrData.filter(n => n.unread).length;
+            if (dot) dot.style.display = unreadCount > 0 ? 'block' : 'none';
+            list.innerHTML = notifMgrData.length === 0
+                ? '<div style="padding:1.25rem;text-align:center;color:#475569;font-size:.85rem;">No new notifications</div>'
+                : notifMgrData.map((n, i) => `
+                    <div onclick="markRead(${i})" style="padding:1rem 1.25rem;border-bottom:1px solid rgba(255,255,255,.05);display:flex;gap:.75rem;align-items:flex-start;cursor:pointer;background:${n.unread ? 'rgba(168,85,247,.04)' : 'transparent'};transition:background .2s;">
+                        <div style="font-size:1.25rem;line-height:1;flex-shrink:0">${n.icon}</div>
+                        <div style="flex:1;min-width:0">
+                            <div style="font-size:.82rem;font-weight:700;color:${n.unread ? '#f1f5f9' : '#94a3b8'}">${n.title}</div>
+                            <div style="font-size:.75rem;color:#64748b;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${n.desc}</div>
+                        </div>
+                        <div style="font-size:.65rem;color:#475569;white-space:nowrap;flex-shrink:0">${n.time}</div>
+                    </div>`).join('');
+        }
+
+        function toggleNotifPanel() {
+            const panel = document.getElementById('notifPanel');
+            if (!panel) return;
+            const isOpen = panel.style.display !== 'none';
+            panel.style.display = isOpen ? 'none' : 'block';
+            if (!isOpen) loadNotifList();
+        }
+
+        function markRead(idx) {
+            notifMgrData[idx].unread = false;
+            loadNotifList();
+        }
+
+        function clearNotifs() {
+            notifMgrData = [];
+            loadNotifList();
+        }
+
+        document.addEventListener('click', function (e) {
+            const wrap = document.getElementById('notifWrap');
+            if (wrap && !wrap.contains(e.target)) {
+                const panel = document.getElementById('notifPanel');
+                if (panel) panel.style.display = 'none';
+            }
+        });
 
         /* ══ KPI COUNTER ANIMATION ═══════════════════════════════════ */
         function animateCount(elemId, target, prefix = '', suffix = '', duration = 1500) {

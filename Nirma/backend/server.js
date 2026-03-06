@@ -22,6 +22,8 @@ const orderRoutes = require('./routes/order.routes');
 const customerRoutes = require('./routes/customer.routes');
 const analyticsRoutes = require('./routes/analytics.routes');
 const adminRoutes = require('./routes/admin.routes');
+const aiRoutes = require('./routes/ai.routes');
+const voiceRoutes = require('./routes/voice.routes');
 
 // Initialize Express app + HTTP server + Socket.io
 const app = express();
@@ -74,7 +76,7 @@ app.use((req, res, next) => {
 io.on('connection', (socket) => {
     console.log(`🔌 Socket connected: ${socket.id}`);
 
-    // Client sends { role: 'admin' } or { role: 'restaurant_manager', restaurantId: '...' }
+    // Client sends { role: 'admin' } or { role: 'restaurant_manager', restaurantId: '...' } or { role: 'customer', customerId: '...' }
     socket.on('join', (data) => {
         if (data.role === 'admin') {
             socket.join('admin-room');
@@ -83,6 +85,10 @@ io.on('connection', (socket) => {
             const room = `restaurant-${data.restaurantId}-room`;
             socket.join(room);
             console.log(`✅ Manager joined ${room} [${socket.id}]`);
+        } else if (data.role === 'customer' && data.customerId) {
+            const room = `customer-${data.customerId}-room`;
+            socket.join(room);
+            console.log(`✅ Customer joined ${room} [${socket.id}]`);
         }
     });
 
@@ -112,6 +118,13 @@ app.use('/api/analytics', analyticsRoutes);
 
 // Admin routes
 app.use('/api/admin', adminRoutes);
+
+// AI & Voice routes
+app.use('/api/ai', aiRoutes);
+app.use('/api/voice', (req, res, next) => {
+    req.io = io; // Inject socket.io into req for broadcasting
+    next();
+}, voiceRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
