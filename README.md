@@ -377,7 +377,7 @@ This project is licensed under the ISC License - see the LICENSE file for detail
 ## 📧 Support & Contact
 
 - **Issues**: Create an issue on GitHub
-- **Email**: your-email@example.com
+- **Email**: priyanshumacwan260@gmail.com
 - **Documentation**: See [BACKEND_README.md](./BACKEND_README.md) and [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)
 
 ---
